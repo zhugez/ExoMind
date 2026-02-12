@@ -28,8 +28,8 @@ body {
   position: relative;
   height: 360px;
   border-radius: 20px;
-  border: 1px solid rgba(132, 170, 255, 0.34);
-  background: radial-gradient(500px 250px at 75% 10%, rgba(107, 145, 255, 0.2), transparent 60%),
+  border: 1px solid rgba(217, 151, 255, 0.38);
+  background: radial-gradient(500px 250px at 75% 10%, rgba(209, 126, 255, 0.22), transparent 60%),
     linear-gradient(180deg, rgba(12, 21, 39, 0.96), rgba(7, 13, 24, 0.96));
   transform-style: preserve-3d;
   transform: rotateX(16deg) rotateZ(-3deg);
@@ -40,8 +40,8 @@ body {
 .grid-plane {
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(rgba(103, 140, 255, 0.16) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(103, 140, 255, 0.16) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(205, 131, 255, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(205, 131, 255, 0.18) 1px, transparent 1px);
   background-size: 28px 28px;
   transform: translateZ(-30px) scale(1.15);
 }
@@ -50,9 +50,9 @@ body {
   position: absolute;
   width: 46px;
   height: 46px;
-  background: linear-gradient(145deg, rgba(126, 167, 255, 0.9), rgba(82, 226, 194, 0.7));
-  border: 1px solid rgba(203, 225, 255, 0.5);
-  box-shadow: 0 12px 22px rgba(78, 134, 255, 0.45);
+  background: linear-gradient(145deg, rgba(221, 152, 255, 0.92), rgba(117, 255, 215, 0.75));
+  border: 1px solid rgba(255, 221, 255, 0.55);
+  box-shadow: 0 12px 22px rgba(177, 88, 255, 0.42);
   transform-style: preserve-3d;
   animation: float3d 5s ease-in-out infinite;
 }
@@ -62,8 +62,8 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(203, 225, 255, 0.4);
-  background: rgba(114, 154, 255, 0.35);
+  border: 1px solid rgba(255, 221, 255, 0.45);
+  background: rgba(207, 136, 255, 0.38);
 }
 
 .cube::before { transform: translateZ(22px); }
@@ -76,7 +76,7 @@ body {
 .radar-ring {
   position: absolute;
   border-radius: 999px;
-  border: 1px solid rgba(132, 177, 255, 0.45);
+  border: 1px solid rgba(232, 160, 255, 0.5);
   animation: pulse 3s ease-out infinite;
 }
 
@@ -89,7 +89,7 @@ body {
   left: 14px;
   font-size: 11px;
   letter-spacing: 0.24em;
-  color: #9db4df;
+  color: #e0baf0;
 }
 
 @keyframes float3d {
