@@ -1,0 +1,32 @@
+name: Bug report
+about: Report a reproducible bug so we can keep the ExoMind runtime stable.
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! Please include enough details so the maintainers can reproduce the issue.
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      description: Which part of the project is affected (CLI, API, docs, etc.)?
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Provide the commands you ran and the context (OS, branch, etc.).
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected to happen
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Logs, screenshots, or workarounds you already tried.

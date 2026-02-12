@@ -1,0 +1,45 @@
+{
+  "notes_root": "30_Resources/Schemas",
+  "nodes": [
+    {
+      "id": "30_Resources/Schemas/benchmark-intro.md",
+      "path": "30_Resources/Schemas/benchmark-intro.md",
+      "title": "Synthetic Benchmark Overview",
+      "stem": "benchmark-intro"
+    },
+    {
+      "id": "30_Resources/Schemas/benchmark-hybrid.md",
+      "path": "30_Resources/Schemas/benchmark-hybrid.md",
+      "title": "Hybrid Recall Concepts",
+      "stem": "benchmark-hybrid"
+    },
+    {
+      "id": "30_Resources/Schemas/benchmark-playbook.md",
+      "path": "30_Resources/Schemas/benchmark-playbook.md",
+      "title": "Benchmark Execution Playbook",
+      "stem": "benchmark-playbook"
+    }
+  ],
+  "edges": [
+    {
+      "src": "30_Resources/Schemas/benchmark-hybrid.md",
+      "dst": "30_Resources/Schemas/benchmark-intro.md",
+      "type": "WIKILINK"
+    },
+    {
+      "src": "30_Resources/Schemas/benchmark-playbook.md",
+      "dst": "30_Resources/Schemas/benchmark-hybrid.md",
+      "type": "WIKILINK"
+    },
+    {
+      "src": "30_Resources/Schemas/benchmark-playbook.md",
+      "dst": "30_Resources/Schemas/benchmark-intro.md",
+      "type": "WIKILINK"
+    }
+  ],
+  "stats": {
+    "notes": 3,
+    "nodes": 3,
+    "edges": 3
+  }
+}

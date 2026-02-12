@@ -1,0 +1,28 @@
+name: Feature request
+about: Suggest a capability that helps OpenClaw and Codex workflows stay productive.
+title: "[feature] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the idea clearly so maintainers can assess the value.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What do you want to add or change?
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation or use case
+      description: Why does this change help your workflow?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried other approaches?
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context

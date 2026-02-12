@@ -1,0 +1,38 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+pip-wheel-metadata/
+.htmlcov/
+htmlcov/
+.coverage
+.coverage.*
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Editor directories
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Obsidian workspace
+.obsidian/workspace.json
+
+# ExoMind artifacts
+.neural/

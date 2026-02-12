@@ -1,0 +1,40 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1020"/>
+      <stop offset="1" stop-color="#121A34"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(950 220) rotate(120) scale(420 420)">
+      <stop stop-color="#60A5FA" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <g opacity="0.25" stroke="#3B82F6" stroke-width="1.5">
+    <path d="M140 180L280 120L420 210L560 140L700 220L840 150L980 230L1140 170"/>
+    <path d="M140 340L300 280L440 360L590 300L730 380L880 320L1030 400"/>
+    <path d="M150 500L290 440L430 530L580 470L720 550L860 490L1000 560"/>
+  </g>
+
+  <g fill="#93C5FD">
+    <circle cx="140" cy="180" r="6"/>
+    <circle cx="280" cy="120" r="6"/>
+    <circle cx="420" cy="210" r="6"/>
+    <circle cx="560" cy="140" r="6"/>
+    <circle cx="700" cy="220" r="6"/>
+    <circle cx="840" cy="150" r="6"/>
+    <circle cx="980" cy="230" r="6"/>
+    <circle cx="1140" cy="170" r="6"/>
+  </g>
+
+  <text x="96" y="270" fill="#E5EDFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="82" font-weight="700">ExoMind</text>
+  <text x="100" y="330" fill="#A5B4FC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="500">Portable knowledge runtime for OpenClaw + Codex</text>
+
+  <rect x="100" y="384" width="520" height="60" rx="14" fill="#111B36" stroke="#2B4EA2"/>
+  <text x="128" y="422" fill="#BFDBFE" font-family="JetBrains Mono,Consolas,monospace" font-size="24">exom recall --query "session context"</text>
+
+  <text x="100" y="486" fill="#8EA3DA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22">by zhugez</text>
+</svg>

@@ -1,0 +1,90 @@
+name: exom-release
+
+on:
+  push:
+    tags:
+      - "v*-beta*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: exom-linux-x86_64
+            bin: exom
+          - os: macos-latest
+            artifact: exom-macos-x86_64
+            bin: exom
+          - os: windows-latest
+            artifact: exom-windows-x86_64
+            bin: exom.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release binary
+        run: cargo build --release --bin exom
+
+      - name: Package artifact (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist
+          cp target/release/${{ matrix.bin }} dist/${{ matrix.bin }}
+          tar -C dist -czf ${{ matrix.artifact }}.tar.gz ${{ matrix.bin }}
+
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item target/release/${{ matrix.bin }} dist/${{ matrix.bin }}
+          Compress-Archive -Path dist/${{ matrix.bin }} -DestinationPath ${{ matrix.artifact }}.zip -Force
+
+      - name: Upload artifact (Unix)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.tar.gz
+
+      - name: Upload artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.zip
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-beta')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
+          generate_release_notes: true
