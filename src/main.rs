@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::env;
 use std::fmt;
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{BufRead, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration as StdDuration, Instant, SystemTime};
 use walkdir::WalkDir;
@@ -122,6 +122,27 @@ enum Commands {
         notes_root: PathBuf,
         #[arg(long, default_value_t = false)]
         json: bool,
+    },
+    /// Format recalled knowledge as an agent-ready markdown context block for Pi
+    #[command(name = "pi-context")]
+    PiContext {
+        #[arg(long)]
+        query: String,
+        #[arg(long, default_value = "5")]
+        topk: usize,
+        #[arg(long)]
+        notes_root: Option<PathBuf>,
+        #[arg(long)]
+        graph: Option<PathBuf>,
+        #[arg(long, default_value_t = 3000)]
+        max_chars: usize,
+    },
+    /// Run as a Model Context Protocol (MCP) server over stdio for Pi and other agents
+    Mcp {
+        #[arg(long)]
+        notes_root: Option<PathBuf>,
+        #[arg(long)]
+        graph: Option<PathBuf>,
     },
 }
 
@@ -333,6 +354,22 @@ fn main() -> Result<()> {
                     println!("  {}", detail);
                 }
             }
+        }
+        Commands::PiContext {
+            query,
+            topk,
+            notes_root,
+            graph,
+            max_chars,
+        } => {
+            let root = resolve_default_notes_root(notes_root);
+            let graph_path = resolve_default_graph(graph, &root)?;
+            let text = run_pi_context(&query, topk, &root, &graph_path, max_chars)?;
+            println!("{}", text);
+        }
+        Commands::Mcp { notes_root, graph } => {
+            let root = resolve_default_notes_root(notes_root);
+            run_mcp_server(&root, graph)?;
         }
     }
 
@@ -1201,6 +1238,281 @@ fn gather_inbox_notes(notes_root: &Path) -> Result<Vec<PathBuf>> {
     }
     notes.sort();
     Ok(notes)
+}
+
+fn resolve_default_notes_root(explicit: Option<PathBuf>) -> PathBuf {
+    if let Some(p) = explicit {
+        return normalize_path(p);
+    }
+    if let Ok(env_path) = env::var("EXOMIND_NOTES_ROOT") {
+        if !env_path.trim().is_empty() {
+            return normalize_path(PathBuf::from(env_path));
+        }
+    }
+    if let Ok(home) = env::var("HOME") {
+        let yasna = PathBuf::from(home).join("Yasna-Memory");
+        if yasna.is_dir() {
+            return yasna;
+        }
+    }
+    normalize_path(PathBuf::from("."))
+}
+
+fn resolve_default_graph(explicit: Option<PathBuf>, notes_root: &Path) -> Result<PathBuf> {
+    if let Some(p) = explicit {
+        let p = normalize_path(p);
+        if p.exists() {
+            return Ok(p);
+        }
+    }
+    let default_graph = notes_root.join(".neural").join("graph.json");
+    if default_graph.exists() {
+        return Ok(default_graph);
+    }
+    let out_root = notes_root.join(".neural");
+    let result = index_graph_data(notes_root, &out_root)?;
+    Ok(result.graph_path)
+}
+
+fn extract_excerpt(content: &str, max_chars: usize) -> String {
+    let mut lines = Vec::new();
+    let mut in_frontmatter = false;
+    for (i, line) in content.lines().enumerate() {
+        if i == 0 && line.trim() == "---" {
+            in_frontmatter = true;
+            continue;
+        }
+        if in_frontmatter {
+            if line.trim() == "---" {
+                in_frontmatter = false;
+            }
+            continue;
+        }
+        let trimmed = line.trim();
+        if !trimmed.is_empty() && !trimmed.starts_with("<!--") {
+            lines.push(line);
+        }
+    }
+    let joined = lines.join("\n");
+    if joined.chars().count() <= max_chars {
+        joined
+    } else {
+        let truncated: String = joined.chars().take(max_chars).collect();
+        format!("{}...", truncated)
+    }
+}
+
+fn run_pi_context(
+    query: &str,
+    topk: usize,
+    notes_root: &Path,
+    graph_path: &Path,
+    max_chars: usize,
+) -> Result<String> {
+    let graph_data = load_graph(graph_path)?;
+    let weights = RecallWeights {
+        lexical: 1.0,
+        graph: 1.0,
+        semantic: 1.0,
+    };
+    let rows = recall_from_graph(&graph_data, query, topk, &weights);
+    if rows.is_empty() {
+        return Ok(format!("<!-- exomind: no relevant memory found for {:?} -->", query));
+    }
+
+    let mut output = String::new();
+    output.push_str(&format!("<exomind_memory query={:?}>\n", query));
+    output.push_str("## Relevant Memory & Knowledge Context (ExoMind)\n\n");
+
+    let mut total_chars = 0;
+    for row in rows {
+        if total_chars >= max_chars {
+            break;
+        }
+        output.push_str(&format!("### {} (score: {:.2})\n", row.title, row.score));
+        if let Some(ref rel_path) = row.path {
+            output.push_str(&format!("*Path: {}*\n", rel_path));
+            let full_path = notes_root.join(rel_path);
+            if full_path.is_file() {
+                if let Ok(content) = fs::read_to_string(&full_path) {
+                    let excerpt = extract_excerpt(&content, 600);
+                    output.push_str(&excerpt);
+                    output.push('\n');
+                }
+            }
+        }
+        output.push('\n');
+        total_chars = output.len();
+    }
+    output.push_str("</exomind_memory>\n");
+    Ok(output)
+}
+
+fn run_mcp_server(notes_root: &Path, graph_path: Option<PathBuf>) -> Result<()> {
+    let stdin = std::io::stdin();
+    let stdout = std::io::stdout();
+    let mut reader = stdin.lock();
+    let mut writer = stdout.lock();
+
+    let mut line = String::new();
+    while reader.read_line(&mut line)? > 0 {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            line.clear();
+            continue;
+        }
+
+        let req: serde_json::Value = match serde_json::from_str(trimmed) {
+            Ok(v) => v,
+            Err(_) => {
+                line.clear();
+                continue;
+            }
+        };
+
+        let id = req.get("id").cloned();
+        let method = req.get("method").and_then(|v| v.as_str()).unwrap_or("");
+
+        match method {
+            "initialize" => {
+                let resp = serde_json::json!({
+                    "jsonrpc": "2.0",
+                    "id": id,
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": { "tools": {} },
+                        "serverInfo": {
+                            "name": "exomind",
+                            "version": env!("CARGO_PKG_VERSION")
+                        }
+                    }
+                });
+                writeln!(writer, "{}", resp)?;
+                writer.flush()?;
+            }
+            "notifications/initialized" => {}
+            "tools/list" => {
+                let resp = serde_json::json!({
+                    "jsonrpc": "2.0",
+                    "id": id,
+                    "result": {
+                        "tools": [
+                            {
+                                "name": "exom_recall",
+                                "description": "Recall top related knowledge, past patterns, and notes from ExoMind memory graph",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "query": { "type": "string", "description": "The search query or concept to recall" },
+                                        "topk": { "type": "integer", "description": "Number of top results to return", "default": 5 }
+                                    },
+                                    "required": ["query"]
+                                }
+                            },
+                            {
+                                "name": "exom_capture",
+                                "description": "Capture new architectural decisions, preferences, or findings into ExoMind memory inbox",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "input": { "type": "string", "description": "Text or relation to capture (supports REL:TYPE(from->to)[conf])" },
+                                        "note": { "type": "string", "description": "Optional specific note path in 00_Inbox" }
+                                    },
+                                    "required": ["input"]
+                                }
+                            },
+                            {
+                                "name": "exom_index",
+                                "description": "Re-index notes into ExoMind knowledge graph cache",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {}
+                                }
+                            },
+                            {
+                                "name": "exom_doctor",
+                                "description": "Run health checks on ExoMind knowledge vault and graph",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {}
+                                }
+                            }
+                        ]
+                    }
+                });
+                writeln!(writer, "{}", resp)?;
+                writer.flush()?;
+            }
+            "tools/call" => {
+                let params = req.get("params");
+                let name = params.and_then(|p| p.get("name")).and_then(|n| n.as_str()).unwrap_or("");
+                let args = params.and_then(|p| p.get("arguments")).cloned().unwrap_or(serde_json::json!({}));
+
+                let resolved_graph = resolve_default_graph(graph_path.clone(), notes_root);
+                let tool_result: Result<String> = match resolved_graph {
+                    Ok(graph_file) => match name {
+                        "exom_recall" => {
+                            let q = args.get("query").and_then(|v| v.as_str()).unwrap_or("");
+                            let topk = args.get("topk").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
+                            let text = run_pi_context(q, topk, notes_root, &graph_file, 3000)?;
+                            Ok(text)
+                        }
+                        "exom_capture" => {
+                            let inp = args.get("input").and_then(|v| v.as_str()).unwrap_or("");
+                            let note_opt = args.get("note").and_then(|v| v.as_str()).map(PathBuf::from);
+                            let target = resolve_capture_note(notes_root, note_opt);
+                            let report = run_capture(notes_root, &target, inp)?;
+                            Ok(format!("CAPTURED: {} (relations: {})", report.note, report.relation_count))
+                        }
+                        "exom_index" => {
+                            let out_root = notes_root.join(".neural");
+                            let res = index_graph_data(notes_root, &out_root)?;
+                            Ok(format!("INDEX_OK: notes={}, nodes={}, edges={}", res.notes, res.nodes, res.edges))
+                        }
+                        "exom_doctor" => {
+                            let report = doctor_report(notes_root, &graph_file);
+                            Ok(serde_json::to_string_pretty(&report)?)
+                        }
+                        _ => Err(anyhow::anyhow!("Unknown tool: {}", name)),
+                    },
+                    Err(e) => Err(e),
+                };
+
+                let resp = match tool_result {
+                    Ok(text) => serde_json::json!({
+                        "jsonrpc": "2.0",
+                        "id": id,
+                        "result": {
+                            "content": [{ "type": "text", "text": text }]
+                        }
+                    }),
+                    Err(e) => serde_json::json!({
+                        "jsonrpc": "2.0",
+                        "id": id,
+                        "result": {
+                            "content": [{ "type": "text", "text": format!("Error: {}", e) }],
+                            "isError": true
+                        }
+                    }),
+                };
+                writeln!(writer, "{}", resp)?;
+                writer.flush()?;
+            }
+            _ => {
+                if id.is_some() {
+                    let resp = serde_json::json!({
+                        "jsonrpc": "2.0",
+                        "id": id,
+                        "error": { "code": -32601, "message": "Method not found" }
+                    });
+                    writeln!(writer, "{}", resp)?;
+                    writer.flush()?;
+                }
+            }
+        }
+        line.clear();
+    }
+    Ok(())
 }
 
 #[cfg(test)]
