@@ -1,0 +1,4 @@
+# Optional local retrieval only; keep Rust/BM25 installation dependency-free.
+# Tested with sentence-transformers 5.7.0 and numpy 2.5.4 on CPU.
+sentence-transformers>=5,<6
+numpy>=2,<3
