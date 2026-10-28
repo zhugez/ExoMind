@@ -10,11 +10,13 @@ import statistics
 import subprocess
 import tempfile
 import time
+import unicodedata
 
 
 # Match ExoMind's tokenizer to avoid a tokenizer advantage in the comparison.
 def tokens(text):
-    return re.findall(r"[a-z0-9_-]+", text.lower())
+    folded = ''.join('d' if c in ('đ', 'Đ') else c for c in unicodedata.normalize('NFD', text) if not unicodedata.combining(c))
+    return re.findall(r"[a-z0-9_-]+", folded.lower())
 
 
 def bm25(documents, query):
@@ -230,5 +232,6 @@ if __name__ == "__main__":
     report = run(str(Path(args.exom).resolve()), json.loads(args.fixture.read_text()))
     text = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
     if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(text)
     print(json.dumps({k: v for k, v in report.items() if k != "examples"}, indent=2))

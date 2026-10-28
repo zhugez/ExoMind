@@ -5,9 +5,16 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
+import unicodedata
+
+
+def tokens(text):
+    folded = ''.join('d' if c in ('đ', 'Đ') else c for c in unicodedata.normalize('NFD', text) if not unicodedata.combining(c))
+    return re.findall(r"[a-z0-9_-]+", folded.lower())
 
 
 def fingerprint(graph, texts):
@@ -123,7 +130,6 @@ class Hybrid:
 
     def context(self, query, rows, budget):
         # Exact character budget including paths. Original source lines only, no generated summaries.
-        from benchmark_zero_mem import tokens
         blocks = []
         for row in rows:
             lines = self.texts[row['path']].splitlines()

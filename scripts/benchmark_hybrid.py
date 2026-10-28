@@ -2,14 +2,37 @@
 """Evaluate a private labeled query file locally. Results can contain private queries."""
 import argparse
 import json
+import os
 from pathlib import Path
 import resource
 import statistics
 import subprocess
+import tempfile
 import time
 
-from benchmark_zero_mem import metrics
-from exom_hybrid import Hybrid
+try:
+    from benchmark_zero_mem import metrics
+    from exom_hybrid import Hybrid
+except ImportError:
+    from scripts.benchmark_zero_mem import metrics
+    from scripts.exom_hybrid import Hybrid
+
+
+def write_report(path, report):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as f:
+        temporary = Path(f.name)
+        try:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        except BaseException:
+            temporary.unlink(missing_ok=True)
+            raise
+    try:
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def main():
@@ -94,19 +117,7 @@ def main():
                   negative_return_counts=[dict(query=q, native=len(n), hybrid=len(h))
                                           for q, n, h in zip(negative, native[len(queries):], hybrid[len(queries):])],
                   examples=examples)
-    # O_EXCL-style permissions via a private temporary file; never expose a default world-readable report.
-    import tempfile
-    with tempfile.NamedTemporaryFile(mode='w', dir=args.output.parent, delete=False) as f:
-        temporary = Path(f.name)
-        try:
-            json.dump(report, f, ensure_ascii=False, indent=2)
-        except BaseException:
-            temporary.unlink(missing_ok=True)
-            raise
-    try:
-        temporary.replace(args.output)
-    finally:
-        temporary.unlink(missing_ok=True)
+    write_report(args.output, report)
     print(json.dumps({k: v for k, v in report.items() if k not in ['examples', 'negative_return_counts']}, indent=2))
 
 
