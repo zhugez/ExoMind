@@ -112,7 +112,7 @@ For local semantic/multilingual retrieval alongside BM25, see [hybrid recall set
 
 - `src/main.rs` – Rust-first CLI that powers `exom init/index/recall/doctor`
 - `src/exomind/` – deprecated Python runtime for `serve`/`mcp` or compatibility scripts
-- `scripts/` – Bootstrap helpers and compatibility bridges
+- `scripts/` – Bootstrap helpers, hybrid retrieval tools, and benchmark runners
 - `.neural/` – generated cache files from `exom index` (gitignored)
 - `00_Inbox/`, `10_Projects/`, `20_Areas/`, `30_Resources/`, `99_Archives/` – optional template folders inspired by the PARA method
 - `Makefile` – convenience commands and aliases
