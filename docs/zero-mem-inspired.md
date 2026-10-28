@@ -56,4 +56,4 @@ Most measured gains appear without graph propagation. The graph adds one complet
 
 This is a deliberately small, hand-authored diagnostic fixture made alongside the prototype, **not a held-out benchmark**, independent evaluation, or statistical evidence of superiority. There are no confidence intervals or official LoCoMo/HotpotQA results. Note-level temporal hits do not prove selection of the correct historical fact inside that note. More or larger attached evidence can consume more reader context; this experiment does not measure that cost.
 
-Next useful validation is a separately labeled real-query corpus with equal reader token budgets and answer/support accuracy. Only after that should BM25 or graph propagation be considered for native integration.
+Next useful validation was conducted on a real vault with adopted native changes documented in [Recall evaluation](recall-evaluation.md).

@@ -3,6 +3,8 @@
 All notable changes to ExoMind.
 
 ## [Unreleased] - 2026-02-12
+- Adopted BM25 length normalization, Vietnamese accent folding, relevance-gated graph boosts, and query-local evidence excerpts in native recall.
+- Preserved graph cache compatibility with legacy TF-IDF files and documented reindex requirement and semantic-weight flag meaning.
 - Formalized public-facing documentation, templates, and metadata.
 - Added initial changelog entry for tracking future releases.
 

@@ -86,6 +86,7 @@ enum Commands {
         lexical_weight: f64,
         #[arg(long, default_value = "1.0")]
         graph_weight: f64,
+        /// Legacy flag name for BM25 content score weight (controls BM25 term weighting, not dense embeddings)
         #[arg(long, default_value = "1.0")]
         semantic_weight: f64,
         #[arg(long, default_value_t = false)]
