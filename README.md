@@ -96,6 +96,10 @@ cargo run --bin exom -- doctor --notes-root 30_Resources --graph 30_Resources/Sc
 
 The dataset contains fictional nodes such as the "Hybrid Recall Concepts" note and a "Benchmark Execution Playbook," so the smoke runs remain safe for public CI while mirroring the real graph structure.
 
+## Optional BGE-M3 hybrid retrieval
+
+For local semantic/multilingual retrieval alongside BM25, see [hybrid recall setup and deep real-vault results](docs/hybrid-recall.md). This opt-in Python entry point keeps the Rust default lightweight; model downloads and RAM are required. It includes explicit index/recall/context commands and a private-data benchmark runner. Existing Pi/MCP hooks are not changed automatically.
+
 ## Integration with OpenClaw & Codex
 
 1. Keep the real knowledge in your own protected path (`--notes-root`).
