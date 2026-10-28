@@ -83,7 +83,9 @@ exom lifecycle --mode archive --older-than-days 60 --notes-root .
 
 ## Hybrid recall & benchmark sample
 
-`exom recall` uses a hybrid scoring model that blends token overlap with graph structure: nodes that share lexicon with the query and are referenced by multiple neighbors score higher. The sample dataset at `30_Resources/Schemas/benchmark-sample.json` is intentionally synthetic, showcasing how the hybrid recall signal balances lexical and relational context without any personal data.
+`exom recall` blends title/path overlap, BM25 length-normalized content relevance, and graph influence. Graph influence only boosts candidates that match the query. Vietnamese diacritics are folded consistently at indexing and query time; re-run `exom index` after upgrading to enable matching against previously accented content. Existing TF-IDF cache files remain readable; BM25 reconstructs term counts from their stored weights. The legacy `--semantic-weight` flag now controls BM25, not dense embeddings. `pi-context` selects an excerpt starting at the best matching content line rather than always returning the beginning of a note.
+
+See [the Zero-Mem-inspired experiment](docs/zero-mem-inspired.md) for the prototype and [real-vault evaluation](docs/recall-evaluation.md) for measurements and limitations. The sample dataset at `30_Resources/Schemas/benchmark-sample.json` is intentionally synthetic, showcasing how the hybrid recall signal balances lexical and relational context without any personal data.
 
 Use the sample graph to verify hybrid recall behavior or to exercise the benchmark pipeline:
 

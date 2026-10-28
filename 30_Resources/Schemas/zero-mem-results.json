@@ -1,0 +1,1303 @@
+{
+  "scope": "Synthetic note-level retrieval only; no QA model, no official Zero-Mem implementation",
+  "notes": 28,
+  "queries": 24,
+  "topk": 5,
+  "summary": {
+    "exomind": {
+      "hit@1": 0.6666666666666666,
+      "all_evidence@1": 0.5,
+      "hit@3": 0.9166666666666666,
+      "all_evidence@3": 0.875,
+      "hit@5": 0.9583333333333334,
+      "all_evidence@5": 0.9166666666666666,
+      "mrr@5": 0.8020833333333334
+    },
+    "bm25_hierarchy": {
+      "hit@1": 0.6666666666666666,
+      "all_evidence@1": 0.5,
+      "hit@3": 0.9583333333333334,
+      "all_evidence@3": 0.9166666666666666,
+      "hit@5": 0.9583333333333334,
+      "all_evidence@5": 0.9166666666666666,
+      "mrr@5": 0.8125
+    },
+    "inspired": {
+      "hit@1": 0.6666666666666666,
+      "all_evidence@1": 0.5,
+      "hit@3": 0.9583333333333334,
+      "all_evidence@3": 0.9166666666666666,
+      "hit@5": 0.9583333333333334,
+      "all_evidence@5": 0.9583333333333334,
+      "mrr@5": 0.8125
+    }
+  },
+  "categories": {
+    "lexical": {
+      "exomind": {
+        "hit@1": 0.8333333333333334,
+        "all_evidence@1": 0.8333333333333334,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.9166666666666666
+      },
+      "bm25_hierarchy": {
+        "hit@1": 1,
+        "all_evidence@1": 1,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 1.0
+      },
+      "inspired": {
+        "hit@1": 1,
+        "all_evidence@1": 1,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 1.0
+      }
+    },
+    "multi_hop": {
+      "exomind": {
+        "hit@1": 1,
+        "all_evidence@1": 0,
+        "hit@3": 1,
+        "all_evidence@3": 0.75,
+        "hit@5": 1,
+        "all_evidence@5": 0.75,
+        "mrr@5": 1.0
+      },
+      "bm25_hierarchy": {
+        "hit@1": 1,
+        "all_evidence@1": 0,
+        "hit@3": 1,
+        "all_evidence@3": 0.75,
+        "hit@5": 1,
+        "all_evidence@5": 0.75,
+        "mrr@5": 1.0
+      },
+      "inspired": {
+        "hit@1": 1,
+        "all_evidence@1": 0,
+        "hit@3": 1,
+        "all_evidence@3": 0.75,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 1.0
+      }
+    },
+    "multilingual": {
+      "exomind": {
+        "hit@1": 0.4,
+        "all_evidence@1": 0.4,
+        "hit@3": 0.8,
+        "all_evidence@3": 0.8,
+        "hit@5": 0.8,
+        "all_evidence@5": 0.8,
+        "mrr@5": 0.6
+      },
+      "bm25_hierarchy": {
+        "hit@1": 0.4,
+        "all_evidence@1": 0.4,
+        "hit@3": 0.8,
+        "all_evidence@3": 0.8,
+        "hit@5": 0.8,
+        "all_evidence@5": 0.8,
+        "mrr@5": 0.6
+      },
+      "inspired": {
+        "hit@1": 0.4,
+        "all_evidence@1": 0.4,
+        "hit@3": 0.8,
+        "all_evidence@3": 0.8,
+        "hit@5": 0.8,
+        "all_evidence@5": 0.8,
+        "mrr@5": 0.6
+      }
+    },
+    "paraphrase": {
+      "exomind": {
+        "hit@1": 0.5,
+        "all_evidence@1": 0.5,
+        "hit@3": 0.75,
+        "all_evidence@3": 0.75,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.6875
+      },
+      "bm25_hierarchy": {
+        "hit@1": 0.25,
+        "all_evidence@1": 0.25,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.625
+      },
+      "inspired": {
+        "hit@1": 0.25,
+        "all_evidence@1": 0.25,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.625
+      }
+    },
+    "temporal": {
+      "exomind": {
+        "hit@1": 0.6,
+        "all_evidence@1": 0.6,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.8
+      },
+      "bm25_hierarchy": {
+        "hit@1": 0.6,
+        "all_evidence@1": 0.6,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.8
+      },
+      "inspired": {
+        "hit@1": 0.6,
+        "all_evidence@1": 0.6,
+        "hit@3": 1,
+        "all_evidence@3": 1,
+        "hit@5": 1,
+        "all_evidence@5": 1,
+        "mrr@5": 0.8
+      }
+    }
+  },
+  "timing": {
+    "exomind_rank_mean_ms": 0.05392879166666667,
+    "inspired_build_ms": 0.4774289845954627,
+    "bm25_hierarchy_median_query_ms": 1.016660506138578,
+    "inspired_median_query_ms": 1.976664992980659,
+    "warning": "Rust ranks precomputed TF-IDF; Python recomputes BM25 per query. Not an algorithmic speed comparison."
+  },
+  "examples": [
+    {
+      "query": "Aurora version Python",
+      "category": "lexical",
+      "expected": [
+        "10_Projects/aurora.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/aurora.md",
+          "30_Resources/python.md",
+          "10_Projects/borealis.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/aurora.md",
+          "10_Projects/borealis.md",
+          "30_Resources/python.md"
+        ],
+        "inspired": [
+          "10_Projects/aurora.md",
+          "10_Projects/borealis.md",
+          "30_Resources/python.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/aurora.md",
+          "start": 3,
+          "end": 3,
+          "text": "Aurora was released on 2026-04-10."
+        },
+        {
+          "path": "10_Projects/aurora.md",
+          "start": 5,
+          "end": 5,
+          "text": "Aurora version 2.1 requires Python 3.12."
+        }
+      ]
+    },
+    {
+      "query": "Borealis released",
+      "category": "lexical",
+      "expected": [
+        "10_Projects/borealis.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/borealis.md",
+          "10_Projects/aurora.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/orion-owner.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/borealis.md",
+          "10_Projects/aurora.md"
+        ],
+        "inspired": [
+          "10_Projects/borealis.md",
+          "10_Projects/aurora.md",
+          "30_Resources/python.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/borealis.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Borealis release"
+        },
+        {
+          "path": "10_Projects/borealis.md",
+          "start": 3,
+          "end": 3,
+          "text": "Borealis was released on 2026-04-11."
+        },
+        {
+          "path": "10_Projects/borealis.md",
+          "start": 5,
+          "end": 5,
+          "text": "Borealis version 2.1 requires Python 3.11."
+        }
+      ]
+    },
+    {
+      "query": "Rust tracing anyhow",
+      "category": "lexical",
+      "expected": [
+        "30_Resources/logging.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "30_Resources/logging.md",
+          "30_Resources/nimbus.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/orion-owner.md"
+        ],
+        "bm25_hierarchy": [
+          "30_Resources/logging.md",
+          "30_Resources/nimbus.md"
+        ],
+        "inspired": [
+          "30_Resources/logging.md",
+          "30_Resources/nimbus.md",
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "10_Projects/birch.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "30_Resources/logging.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Logging policy"
+        },
+        {
+          "path": "30_Resources/logging.md",
+          "start": 3,
+          "end": 3,
+          "text": "Use tracing for Rust diagnostic events."
+        },
+        {
+          "path": "30_Resources/logging.md",
+          "start": 5,
+          "end": 5,
+          "text": "Use anyhow to propagate application errors."
+        }
+      ]
+    },
+    {
+      "query": "production backup retention",
+      "category": "lexical",
+      "expected": [
+        "30_Resources/backup.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/retention.md",
+          "30_Resources/backup.md",
+          "20_Areas/mira-team.md",
+          "20_Areas/security.md",
+          "10_Projects/atlas-decisions.md"
+        ],
+        "bm25_hierarchy": [
+          "30_Resources/backup.md",
+          "20_Areas/retention.md",
+          "20_Areas/mira-team.md",
+          "20_Areas/security.md"
+        ],
+        "inspired": [
+          "30_Resources/backup.md",
+          "20_Areas/retention.md",
+          "20_Areas/security.md",
+          "20_Areas/mira-team.md",
+          "10_Projects/orion-owner.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "30_Resources/backup.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Backup runbook"
+        },
+        {
+          "path": "30_Resources/backup.md",
+          "start": 3,
+          "end": 3,
+          "text": "The production backup retention period is 14 days."
+        },
+        {
+          "path": "30_Resources/backup.md",
+          "start": 5,
+          "end": 5,
+          "text": "The staging backup retention period is 3 days."
+        }
+      ]
+    },
+    {
+      "query": "API credentials plain text",
+      "category": "lexical",
+      "expected": [
+        "20_Areas/security.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/security.md",
+          "30_Resources/keyring.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/orion-owner.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/security.md",
+          "30_Resources/keyring.md"
+        ],
+        "inspired": [
+          "20_Areas/security.md",
+          "30_Resources/keyring.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/security.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Security policy"
+        },
+        {
+          "path": "20_Areas/security.md",
+          "start": 3,
+          "end": 3,
+          "text": "Production API credentials must be stored in the operating system keyring. Never put secrets in plain text config files."
+        },
+        {
+          "path": "20_Areas/security.md",
+          "start": 5,
+          "end": 5,
+          "text": "Credential rotation is required after suspected exposure."
+        }
+      ]
+    },
+    {
+      "query": "Lyra checkpoints SQLite",
+      "category": "lexical",
+      "expected": [
+        "10_Projects/lyra-storage.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/lyra-storage.md",
+          "30_Resources/sqlite.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/niko.md",
+          "10_Projects/atlas-decisions.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/lyra-storage.md",
+          "30_Resources/sqlite.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/niko.md"
+        ],
+        "inspired": [
+          "10_Projects/lyra-storage.md",
+          "30_Resources/sqlite.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/niko.md",
+          "10_Projects/orion-owner.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/lyra-storage.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Lyra storage"
+        },
+        {
+          "path": "10_Projects/lyra-storage.md",
+          "start": 3,
+          "end": 3,
+          "text": "Current configuration: Lyra stores checkpoints in SQLite."
+        },
+        {
+          "path": "10_Projects/lyra-storage.md",
+          "start": 5,
+          "end": 5,
+          "text": "Lyra is maintained by Niko, not Mira."
+        }
+      ]
+    },
+    {
+      "query": "What caused Atlas requests to time out in January?",
+      "category": "temporal",
+      "expected": [
+        "10_Projects/atlas-incidents.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-decisions.md",
+          "30_Resources/request.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/orion-storage.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "30_Resources/request.md",
+          "30_Resources/logging.md",
+          "10_Projects/atlas-index.md"
+        ],
+        "inspired": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "30_Resources/request.md",
+          "10_Projects/atlas-index.md",
+          "30_Resources/logging.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Atlas decisions"
+        },
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 3,
+          "end": 3,
+          "text": "On 2026-01-09, Atlas adopted request coalescing to merge duplicate concurrent requests."
+        },
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 5,
+          "end": 5,
+          "text": "On 2026-02-13, Atlas replaced its DNS resolver after the February incident. The decision did not remove request coalescing."
+        }
+      ]
+    },
+    {
+      "query": "What caused Atlas latency in February?",
+      "category": "temporal",
+      "expected": [
+        "10_Projects/atlas-incidents.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/retention.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "30_Resources/redis.md",
+          "20_Areas/mira-team.md"
+        ],
+        "inspired": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "20_Areas/mira-team.md",
+          "30_Resources/redis.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 3,
+          "end": 3,
+          "text": "On 2026-01-09, Atlas adopted request coalescing to merge duplicate concurrent requests."
+        },
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 5,
+          "end": 5,
+          "text": "On 2026-02-13, Atlas replaced its DNS resolver after the February incident. The decision did not remove request coalescing."
+        }
+      ]
+    },
+    {
+      "query": "Where does Orion currently store checkpoints?",
+      "category": "temporal",
+      "expected": [
+        "10_Projects/orion-storage.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/lyra-storage.md",
+          "30_Resources/sqlite.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/cedar.md",
+          "10_Projects/lyra-storage.md"
+        ],
+        "inspired": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/lyra-storage.md",
+          "10_Projects/cedar.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Orion storage history"
+        },
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 3,
+          "end": 3,
+          "text": "Previous configuration: Orion stored checkpoints in SQLite until 2026-03-01."
+        },
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 5,
+          "end": 5,
+          "text": "Current configuration: Orion stores checkpoints in PostgreSQL after 2026-03-01."
+        }
+      ]
+    },
+    {
+      "query": "Which database did Orion use before 2026-03-01?",
+      "category": "temporal",
+      "expected": [
+        "10_Projects/orion-storage.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "30_Resources/logging.md",
+          "30_Resources/sqlite.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/orion-storage.md",
+          "30_Resources/logging.md",
+          "10_Projects/orion-owner.md",
+          "30_Resources/sqlite.md",
+          "10_Projects/orion-index.md"
+        ],
+        "inspired": [
+          "10_Projects/orion-storage.md",
+          "30_Resources/logging.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "30_Resources/sqlite.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Orion storage history"
+        },
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 3,
+          "end": 3,
+          "text": "Previous configuration: Orion stored checkpoints in SQLite until 2026-03-01."
+        },
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 5,
+          "end": 5,
+          "text": "Current configuration: Orion stores checkpoints in PostgreSQL after 2026-03-01."
+        }
+      ]
+    },
+    {
+      "query": "What did Atlas replace after the February incident?",
+      "category": "temporal",
+      "expected": [
+        "10_Projects/atlas-decisions.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-index.md",
+          "20_Areas/english.md",
+          "20_Areas/security.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "20_Areas/english.md",
+          "10_Projects/atlas-index.md",
+          "20_Areas/security.md"
+        ],
+        "inspired": [
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "20_Areas/english.md",
+          "20_Areas/security.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 3,
+          "end": 3,
+          "text": "On 2026-01-09, Atlas adopted request coalescing to merge duplicate concurrent requests."
+        },
+        {
+          "path": "10_Projects/atlas-decisions.md",
+          "start": 5,
+          "end": 5,
+          "text": "On 2026-02-13, Atlas replaced its DNS resolver after the February incident. The decision did not remove request coalescing."
+        }
+      ]
+    },
+    {
+      "query": "Which team employs the maintainer of Orion?",
+      "category": "multi_hop",
+      "expected": [
+        "10_Projects/orion-owner.md",
+        "20_Areas/mira-team.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-index.md",
+          "30_Resources/redis.md",
+          "10_Projects/atlas-incidents.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/mira-team.md",
+          "20_Areas/niko.md",
+          "10_Projects/orion-owner.md",
+          "30_Resources/redis.md",
+          "10_Projects/orion-index.md"
+        ],
+        "inspired": [
+          "20_Areas/mira-team.md",
+          "10_Projects/orion-owner.md",
+          "20_Areas/niko.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/orion-storage.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/mira-team.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Mira profile"
+        },
+        {
+          "path": "20_Areas/mira-team.md",
+          "start": 3,
+          "end": 3,
+          "text": "Mira works in the Helios team."
+        },
+        {
+          "path": "20_Areas/mira-team.md",
+          "start": 5,
+          "end": 5,
+          "text": "Helios handles production reliability."
+        }
+      ]
+    },
+    {
+      "query": "Which language is supported by the library Cedar depends on?",
+      "category": "multi_hop",
+      "expected": [
+        "10_Projects/cedar.md",
+        "30_Resources/nimbus.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "30_Resources/nimbus.md",
+          "10_Projects/birch.md",
+          "10_Projects/atlas-incidents.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "10_Projects/birch.md",
+          "30_Resources/keyring.md",
+          "20_Areas/english.md"
+        ],
+        "inspired": [
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "10_Projects/birch.md",
+          "30_Resources/nimbus.md",
+          "20_Areas/english.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/cedar.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Cedar registry"
+        },
+        {
+          "path": "10_Projects/cedar.md",
+          "start": 3,
+          "end": 3,
+          "text": "Cedar depends on the Nimbus library."
+        },
+        {
+          "path": "10_Projects/cedar.md",
+          "start": 5,
+          "end": 5,
+          "text": "Cedar does not depend on Cirrus."
+        }
+      ]
+    },
+    {
+      "query": "Which language is supported by the library Birch depends on?",
+      "category": "multi_hop",
+      "expected": [
+        "10_Projects/birch.md",
+        "30_Resources/cirrus.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/birch.md",
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "30_Resources/nimbus.md",
+          "10_Projects/atlas-incidents.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/birch.md",
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "30_Resources/keyring.md",
+          "20_Areas/english.md"
+        ],
+        "inspired": [
+          "10_Projects/birch.md",
+          "10_Projects/cedar.md",
+          "30_Resources/cirrus.md",
+          "30_Resources/nimbus.md",
+          "20_Areas/english.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/birch.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Birch registry"
+        },
+        {
+          "path": "10_Projects/birch.md",
+          "start": 3,
+          "end": 3,
+          "text": "Birch depends on Cirrus. Birch deployment is approved by Niko."
+        }
+      ]
+    },
+    {
+      "query": "Which team employs the maintainer of Lyra?",
+      "category": "multi_hop",
+      "expected": [
+        "10_Projects/lyra-storage.md",
+        "20_Areas/niko.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/lyra-storage.md",
+          "20_Areas/niko.md",
+          "30_Resources/redis.md",
+          "10_Projects/atlas-incidents.md",
+          "20_Areas/mira-team.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/niko.md",
+          "20_Areas/mira-team.md",
+          "10_Projects/lyra-storage.md",
+          "30_Resources/redis.md",
+          "30_Resources/nimbus.md"
+        ],
+        "inspired": [
+          "20_Areas/niko.md",
+          "20_Areas/mira-team.md",
+          "10_Projects/lyra-storage.md",
+          "30_Resources/redis.md",
+          "30_Resources/backup.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/niko.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Niko profile"
+        },
+        {
+          "path": "20_Areas/niko.md",
+          "start": 3,
+          "end": 3,
+          "text": "Niko works in the Selene team. Selene manages Lyra."
+        }
+      ]
+    },
+    {
+      "query": "How do we merge duplicate concurrent work in Atlas?",
+      "category": "paraphrase",
+      "expected": [
+        "10_Projects/atlas-decisions.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/atlas-decisions.md",
+          "30_Resources/request.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/orion-storage.md"
+        ],
+        "bm25_hierarchy": [
+          "30_Resources/request.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/atlas-incidents.md",
+          "20_Areas/vietnamese.md"
+        ],
+        "inspired": [
+          "30_Resources/request.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/atlas-incidents.md",
+          "20_Areas/vietnamese.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "30_Resources/request.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Request handling"
+        },
+        {
+          "path": "30_Resources/request.md",
+          "start": 3,
+          "end": 3,
+          "text": "Concurrent requests can cause duplicate work. A cache can serve repeated requests after completion, but does not necessarily merge work in flight."
+        }
+      ]
+    },
+    {
+      "query": "Where must we keep production access secrets?",
+      "category": "paraphrase",
+      "expected": [
+        "20_Areas/security.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/security.md",
+          "20_Areas/mira-team.md",
+          "20_Areas/retention.md",
+          "30_Resources/backup.md",
+          "10_Projects/atlas-decisions.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/security.md",
+          "20_Areas/mira-team.md",
+          "30_Resources/backup.md",
+          "20_Areas/retention.md"
+        ],
+        "inspired": [
+          "20_Areas/security.md",
+          "20_Areas/mira-team.md",
+          "30_Resources/backup.md",
+          "20_Areas/retention.md",
+          "10_Projects/orion-owner.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/security.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Security policy"
+        },
+        {
+          "path": "20_Areas/security.md",
+          "start": 3,
+          "end": 3,
+          "text": "Production API credentials must be stored in the operating system keyring. Never put secrets in plain text config files."
+        },
+        {
+          "path": "20_Areas/security.md",
+          "start": 5,
+          "end": 5,
+          "text": "Credential rotation is required after suspected exposure."
+        }
+      ]
+    },
+    {
+      "query": "How long should staging backups be kept?",
+      "category": "paraphrase",
+      "expected": [
+        "30_Resources/backup.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "30_Resources/python.md",
+          "20_Areas/retention.md",
+          "20_Areas/security.md",
+          "30_Resources/backup.md",
+          "10_Projects/atlas-decisions.md"
+        ],
+        "bm25_hierarchy": [
+          "30_Resources/python.md",
+          "30_Resources/backup.md",
+          "20_Areas/security.md",
+          "20_Areas/retention.md"
+        ],
+        "inspired": [
+          "30_Resources/python.md",
+          "30_Resources/backup.md",
+          "20_Areas/security.md",
+          "20_Areas/retention.md",
+          "10_Projects/aurora.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "30_Resources/python.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Python reference"
+        },
+        {
+          "path": "30_Resources/python.md",
+          "start": 3,
+          "end": 3,
+          "text": "Python 3.12 and Python 3.11 are separate runtime versions. Release compatibility should be tested before deployment."
+        }
+      ]
+    },
+    {
+      "query": "Who looks after Orion?",
+      "category": "paraphrase",
+      "expected": [
+        "10_Projects/orion-owner.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/atlas-decisions.md",
+          "20_Areas/english.md"
+        ],
+        "bm25_hierarchy": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "20_Areas/security.md",
+          "20_Areas/english.md"
+        ],
+        "inspired": [
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "20_Areas/security.md",
+          "20_Areas/english.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 3,
+          "end": 3,
+          "text": "Previous configuration: Orion stored checkpoints in SQLite until 2026-03-01."
+        },
+        {
+          "path": "10_Projects/orion-storage.md",
+          "start": 5,
+          "end": 5,
+          "text": "Current configuration: Orion stores checkpoints in PostgreSQL after 2026-03-01."
+        }
+      ]
+    },
+    {
+      "query": "Khi thay đổi cấu hình gateway cần làm gì?",
+      "category": "multilingual",
+      "expected": [
+        "20_Areas/vietnamese.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/vietnamese.md",
+          "20_Areas/english.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/orion-owner.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/vietnamese.md",
+          "20_Areas/english.md"
+        ],
+        "inspired": [
+          "20_Areas/vietnamese.md",
+          "20_Areas/english.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Quy tắc vận hành"
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 3,
+          "end": 3,
+          "text": "Khi thay đổi cấu hình gateway, phải khởi động lại dịch vụ trước khi kiểm tra."
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 5,
+          "end": 5,
+          "text": "Luôn ghi lại quyết định kiến trúc và lý do thay đổi."
+        }
+      ]
+    },
+    {
+      "query": "Quyết định dùng coalescing cho Atlas",
+      "category": "multilingual",
+      "expected": [
+        "10_Projects/atlas-decisions.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/orion-owner.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/atlas-incidents.md"
+        ],
+        "inspired": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-index.md",
+          "10_Projects/atlas-incidents.md",
+          "30_Resources/dns.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Quy tắc vận hành"
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 3,
+          "end": 3,
+          "text": "Khi thay đổi cấu hình gateway, phải khởi động lại dịch vụ trước khi kiểm tra."
+        }
+      ]
+    },
+    {
+      "query": "What must happen before verification after modifying gateway configuration?",
+      "category": "multilingual",
+      "expected": [
+        "20_Areas/english.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/english.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/security.md",
+          "20_Areas/vietnamese.md",
+          "30_Resources/python.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/english.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/security.md",
+          "10_Projects/lyra-storage.md",
+          "30_Resources/python.md"
+        ],
+        "inspired": [
+          "20_Areas/english.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/security.md",
+          "10_Projects/lyra-storage.md",
+          "30_Resources/python.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/english.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Runtime operations"
+        },
+        {
+          "path": "20_Areas/english.md",
+          "start": 3,
+          "end": 3,
+          "text": "After modifying gateway configuration, restart the service before verification."
+        },
+        {
+          "path": "20_Areas/english.md",
+          "start": 5,
+          "end": 5,
+          "text": "The runtime operation handbook is maintained by Vera."
+        }
+      ]
+    },
+    {
+      "query": "Ai bảo trì dự án Orion?",
+      "category": "multilingual",
+      "expected": [
+        "10_Projects/orion-owner.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-storage.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/atlas-decisions.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/orion-storage.md"
+        ],
+        "inspired": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-index.md",
+          "10_Projects/orion-storage.md",
+          "20_Areas/mira-team.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Quy tắc vận hành"
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 3,
+          "end": 3,
+          "text": "Khi thay đổi cấu hình gateway, phải khởi động lại dịch vụ trước khi kiểm tra."
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 5,
+          "end": 5,
+          "text": "Luôn ghi lại quyết định kiến trúc và lý do thay đổi."
+        }
+      ]
+    },
+    {
+      "query": "cần lưu bí mật truy cập ở đâu",
+      "category": "multilingual",
+      "expected": [
+        "20_Areas/security.md"
+      ],
+      "rankings": {
+        "exomind": [
+          "20_Areas/vietnamese.md",
+          "10_Projects/atlas-decisions.md",
+          "10_Projects/atlas-incidents.md",
+          "10_Projects/orion-owner.md",
+          "10_Projects/orion-storage.md"
+        ],
+        "bm25_hierarchy": [
+          "20_Areas/vietnamese.md"
+        ],
+        "inspired": [
+          "20_Areas/vietnamese.md"
+        ]
+      },
+      "inspired_top1_evidence": [
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 1,
+          "end": 1,
+          "text": "# Quy tắc vận hành"
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 3,
+          "end": 3,
+          "text": "Khi thay đổi cấu hình gateway, phải khởi động lại dịch vụ trước khi kiểm tra."
+        },
+        {
+          "path": "20_Areas/vietnamese.md",
+          "start": 5,
+          "end": 5,
+          "text": "Luôn ghi lại quyết định kiến trúc và lý do thay đổi."
+        }
+      ]
+    }
+  ]
+}

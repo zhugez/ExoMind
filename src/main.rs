@@ -4,8 +4,6 @@ use clap::{Parser, Subcommand, ValueEnum};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use serde_json;
-use serde_yaml;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::env;
 use std::fmt;
@@ -13,6 +11,7 @@ use std::fs::{self, OpenOptions};
 use std::io::{BufRead, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration as StdDuration, Instant, SystemTime};
+use unicode_normalization::{char::is_combining_mark, UnicodeNormalization};
 use walkdir::WalkDir;
 
 const NOTE_DIRS: &[&str] = &[
@@ -545,7 +544,6 @@ fn index_graph_data(notes_root: &Path, out_root: &Path) -> Result<IndexResult> {
     struct NoteEntry {
         id: String,
         title: String,
-        stem: String,
         content: String,
     }
 
@@ -565,7 +563,6 @@ fn index_graph_data(notes_root: &Path, out_root: &Path) -> Result<IndexResult> {
         entries.push(NoteEntry {
             id: id.clone(),
             title: title.clone(),
-            stem: stem.clone(),
             content,
         });
         node_map.insert(
@@ -698,6 +695,30 @@ fn recall_from_graph(
 ) -> Vec<RecallRow> {
     let query_tokens = tokens(query);
     let query_counts = token_counts(query);
+    let document_count = graph.nodes.iter().filter(|n| n.path.is_some()).count() as f64;
+    let mut document_frequency: HashMap<&str, usize> = HashMap::new();
+    for node in graph.nodes.iter().filter(|n| n.path.is_some()) {
+        for term in node.semantic.keys() {
+            *document_frequency.entry(term.as_str()).or_default() += 1;
+        }
+    }
+    // Reconstruct term counts from existing TF-IDF caches; schema stays compatible.
+    let lengths: HashMap<&str, f64> = graph
+        .nodes
+        .iter()
+        .map(|node| {
+            let length = node
+                .semantic
+                .iter()
+                .map(|(term, value)| {
+                    let df = document_frequency.get(term.as_str()).copied().unwrap_or(0) as f64;
+                    value / (((document_count + 1.0) / (df + 1.0)).ln() + 1.0)
+                })
+                .sum();
+            (node.id.as_str(), length)
+        })
+        .collect();
+    let average_length = lengths.values().sum::<f64>() / document_count.max(1.0);
     let mut indegree: HashMap<&str, usize> = HashMap::new();
     for edge in &graph.edges {
         *indegree.entry(edge.dst.as_str()).or_default() += 1;
@@ -708,7 +729,24 @@ fn recall_from_graph(
         let text = format!("{} {}", node.title, node.path.as_deref().unwrap_or(""));
         let lexical = lexical_overlap_score(&query_tokens, &text);
         let graph_value = graph_influence(indegree.get(node.id.as_str()).copied().unwrap_or(0));
-        let semantic = semantic_score(&query_counts, &node.semantic);
+        let semantic: f64 = query_counts
+            .keys()
+            .map(|term| {
+                let df = document_frequency.get(term.as_str()).copied().unwrap_or(0) as f64;
+                let tfidf = node.semantic.get(term).copied().unwrap_or(0.0);
+                let tf = tfidf / (((document_count + 1.0) / (df + 1.0)).ln() + 1.0);
+                if tf == 0.0 {
+                    return 0.0;
+                }
+                let idf = (1.0 + (document_count - df + 0.5) / (df + 0.5)).ln();
+                idf * tf * 2.2
+                    / (tf
+                        + 1.2 * (0.25 + 0.75 * lengths[node.id.as_str()] / average_length.max(1.0)))
+            })
+            .sum();
+        if lexical == 0.0 && semantic == 0.0 {
+            continue;
+        }
         let score =
             weights.lexical * lexical + weights.graph * graph_value + weights.semantic * semantic;
         if score <= 0.0 {
@@ -736,7 +774,16 @@ fn recall_from_graph(
 
 fn token_counts(text: &str) -> HashMap<String, usize> {
     let mut counts = HashMap::new();
-    for token in TOKEN_REGEX.find_iter(text) {
+    let folded: String = text
+        .nfd()
+        .filter(|c| !is_combining_mark(*c))
+        .map(|c| match c {
+            'đ' => 'd',
+            'Đ' => 'D',
+            other => other,
+        })
+        .collect();
+    for token in TOKEN_REGEX.find_iter(&folded) {
         let normalized = token.as_str().to_lowercase();
         *counts.entry(normalized).or_default() += 1;
     }
@@ -744,10 +791,7 @@ fn token_counts(text: &str) -> HashMap<String, usize> {
 }
 
 fn tokens(text: &str) -> HashSet<String> {
-    token_counts(text)
-        .into_iter()
-        .map(|(token, _)| token)
-        .collect()
+    token_counts(text).into_keys().collect()
 }
 
 fn lexical_overlap_score(query_tokens: &HashSet<String>, text: &str) -> f64 {
@@ -757,13 +801,6 @@ fn lexical_overlap_score(query_tokens: &HashSet<String>, text: &str) -> f64 {
 
 fn graph_influence(indegree: usize) -> f64 {
     (indegree.min(10) as f64) * 0.1
-}
-
-fn semantic_score(query_counts: &HashMap<String, usize>, vector: &BTreeMap<String, f64>) -> f64 {
-    query_counts
-        .iter()
-        .map(|(token, count)| vector.get(token).copied().unwrap_or(0.0) * (*count as f64))
-        .sum()
 }
 
 fn run_benchmark(
@@ -996,7 +1033,7 @@ fn build_relations_yaml(relations: &[TypedRelation]) -> Result<String> {
 
 fn parse_relations(text: &str) -> Vec<TypedRelation> {
     let mut relations = Vec::new();
-    for cap in RELATION_REGEX.captures_iter(text).map(|c| c) {
+    for cap in RELATION_REGEX.captures_iter(text) {
         let rel_type = cap
             .get(1)
             .map(|m| m.as_str().trim())
@@ -1177,7 +1214,7 @@ fn run_archive(notes_root: &Path, older_than_days: u64) -> Result<LifecycleRepor
 
 fn duration_since_days(now: SystemTime, earlier: SystemTime) -> f64 {
     now.duration_since(earlier)
-        .unwrap_or_else(|_| StdDuration::ZERO)
+        .unwrap_or(StdDuration::ZERO)
         .as_secs_f64()
         / 86_400.0
 }
@@ -1274,7 +1311,7 @@ fn resolve_default_graph(explicit: Option<PathBuf>, notes_root: &Path) -> Result
     Ok(result.graph_path)
 }
 
-fn extract_excerpt(content: &str, max_chars: usize) -> String {
+fn extract_excerpt(content: &str, query: &str, max_chars: usize) -> String {
     let mut lines = Vec::new();
     let mut in_frontmatter = false;
     for (i, line) in content.lines().enumerate() {
@@ -1293,7 +1330,20 @@ fn extract_excerpt(content: &str, max_chars: usize) -> String {
             lines.push(line);
         }
     }
-    let joined = lines.join("\n");
+    let query_tokens = tokens(query);
+    let best = lines
+        .iter()
+        .enumerate()
+        .filter_map(|(i, line)| {
+            let matches = tokens(line).intersection(&query_tokens).count();
+            (matches > 0).then_some((i, matches))
+        })
+        .max_by_key(|(i, matches)| (*matches, std::cmp::Reverse(*i)))
+        .map(|(i, _)| i)
+        .unwrap_or(0);
+    let start = best;
+    // ponytail: line-local evidence window; use semantic chunks only if evaluations need them.
+    let joined = lines[start..].join("\n");
     if joined.chars().count() <= max_chars {
         joined
     } else {
@@ -1317,7 +1367,10 @@ fn run_pi_context(
     };
     let rows = recall_from_graph(&graph_data, query, topk, &weights);
     if rows.is_empty() {
-        return Ok(format!("<!-- exomind: no relevant memory found for {:?} -->", query));
+        return Ok(format!(
+            "<!-- exomind: no relevant memory found for {:?} -->",
+            query
+        ));
     }
 
     let mut output = String::new();
@@ -1335,7 +1388,7 @@ fn run_pi_context(
             let full_path = notes_root.join(rel_path);
             if full_path.is_file() {
                 if let Ok(content) = fs::read_to_string(&full_path) {
-                    let excerpt = extract_excerpt(&content, 600);
+                    let excerpt = extract_excerpt(&content, query, 600);
                     output.push_str(&excerpt);
                     output.push('\n');
                 }
@@ -1445,29 +1498,43 @@ fn run_mcp_server(notes_root: &Path, graph_path: Option<PathBuf>) -> Result<()> 
             }
             "tools/call" => {
                 let params = req.get("params");
-                let name = params.and_then(|p| p.get("name")).and_then(|n| n.as_str()).unwrap_or("");
-                let args = params.and_then(|p| p.get("arguments")).cloned().unwrap_or(serde_json::json!({}));
+                let name = params
+                    .and_then(|p| p.get("name"))
+                    .and_then(|n| n.as_str())
+                    .unwrap_or("");
+                let args = params
+                    .and_then(|p| p.get("arguments"))
+                    .cloned()
+                    .unwrap_or(serde_json::json!({}));
 
                 let resolved_graph = resolve_default_graph(graph_path.clone(), notes_root);
                 let tool_result: Result<String> = match resolved_graph {
                     Ok(graph_file) => match name {
                         "exom_recall" => {
                             let q = args.get("query").and_then(|v| v.as_str()).unwrap_or("");
-                            let topk = args.get("topk").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
+                            let topk =
+                                args.get("topk").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
                             let text = run_pi_context(q, topk, notes_root, &graph_file, 3000)?;
                             Ok(text)
                         }
                         "exom_capture" => {
                             let inp = args.get("input").and_then(|v| v.as_str()).unwrap_or("");
-                            let note_opt = args.get("note").and_then(|v| v.as_str()).map(PathBuf::from);
+                            let note_opt =
+                                args.get("note").and_then(|v| v.as_str()).map(PathBuf::from);
                             let target = resolve_capture_note(notes_root, note_opt);
                             let report = run_capture(notes_root, &target, inp)?;
-                            Ok(format!("CAPTURED: {} (relations: {})", report.note, report.relation_count))
+                            Ok(format!(
+                                "CAPTURED: {} (relations: {})",
+                                report.note, report.relation_count
+                            ))
                         }
                         "exom_index" => {
                             let out_root = notes_root.join(".neural");
                             let res = index_graph_data(notes_root, &out_root)?;
-                            Ok(format!("INDEX_OK: notes={}, nodes={}, edges={}", res.notes, res.nodes, res.edges))
+                            Ok(format!(
+                                "INDEX_OK: notes={}, nodes={}, edges={}",
+                                res.notes, res.nodes, res.edges
+                            ))
                         }
                         "exom_doctor" => {
                             let report = doctor_report(notes_root, &graph_file);
@@ -1546,15 +1613,57 @@ mod tests {
     }
 
     #[test]
-    fn semantic_score_considers_weights() {
-        let mut vector = BTreeMap::new();
-        vector.insert("foo".to_string(), 2.5);
-        vector.insert("bar".to_string(), 1.0);
-        let mut query_counts = HashMap::new();
-        query_counts.insert("foo".to_string(), 2);
-        query_counts.insert("baz".to_string(), 1);
-        let score = semantic_score(&query_counts, &vector);
-        assert!((score - 5.0).abs() < f64::EPSILON);
+    fn vietnamese_tokens_and_evidence() {
+        assert_eq!(tokens("Đổi cấu hình"), tokens("doi cau hinh"));
+        let content = format!(
+            "# Log\n{}\n\nUse tracing for Rust diagnostics.\n",
+            "irrelevant ".repeat(100)
+        );
+        let excerpt = extract_excerpt(&content, "Rust tracing", 100);
+        assert!(excerpt.contains("tracing"));
+        assert!(!excerpt.contains("irrelevant"));
+    }
+
+    #[test]
+    fn recall_filters_unrelated_graph_hubs_and_normalizes_length() {
+        let node = |id: &str, title: &str, semantic: BTreeMap<String, f64>| Node {
+            id: id.into(),
+            path: Some(id.into()),
+            title: title.into(),
+            stem: id.into(),
+            semantic,
+        };
+        let graph = GraphData {
+            notes_root: String::new(),
+            nodes: vec![
+                node("short", "A", BTreeMap::from([("rust".into(), 1.0)])),
+                node(
+                    "long",
+                    "B",
+                    BTreeMap::from([("rust".into(), 1.0), ("other".into(), 1000.0)]),
+                ),
+                node("hub", "Hub", BTreeMap::new()),
+            ],
+            edges: vec![Edge {
+                src: "long".into(),
+                dst: "hub".into(),
+                kind: "WIKILINK".into(),
+            }],
+            stats: Stats {
+                notes: 3,
+                nodes: 3,
+                edges: 1,
+            },
+        };
+        let weights = RecallWeights {
+            lexical: 1.0,
+            graph: 1.0,
+            semantic: 1.0,
+        };
+        assert!(recall_from_graph(&graph, "unseen", 5, &weights).is_empty());
+        let rows = recall_from_graph(&graph, "rust", 5, &weights);
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[0].path.as_deref(), Some("short"));
     }
 
     #[test]
