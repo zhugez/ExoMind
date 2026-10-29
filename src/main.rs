@@ -123,7 +123,7 @@ enum Commands {
         #[arg(long, default_value_t = false)]
         json: bool,
     },
-    /// Format recalled knowledge as an agent-ready markdown context block for Pi
+    /// Format recalled knowledge as an agent-ready markdown context block for Pi, Hermes, or any agent
     #[command(name = "pi-context")]
     PiContext {
         #[arg(long)]
@@ -137,7 +137,7 @@ enum Commands {
         #[arg(long, default_value_t = 3000)]
         max_chars: usize,
     },
-    /// Run as a Model Context Protocol (MCP) server over stdio for Pi and other agents
+    /// Run as a Model Context Protocol (MCP) server over stdio for Pi, Hermes, and other agents
     Mcp {
         #[arg(long)]
         notes_root: Option<PathBuf>,

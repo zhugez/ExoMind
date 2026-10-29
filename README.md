@@ -96,9 +96,27 @@ cargo run --bin exom -- doctor --notes-root 30_Resources --graph 30_Resources/Sc
 
 The dataset contains fictional nodes such as the "Hybrid Recall Concepts" note and a "Benchmark Execution Playbook," so the smoke runs remain safe for public CI while mirroring the real graph structure.
 
+## Research evaluation standard
+
+Future memory/retrieval optimization follows [benchmark protocol v1](docs/benchmark-protocol.md): LongMemEval cleaned-S as the primary public memory evaluation, LoCoMo as secondary, and frozen real-vault held-out validation. Primary optimization measures evidence coverage under a fixed reader-token budget, not note Hit@1 alone. The protocol specifies ablations, paired uncertainty, abstention/update checks and quality-cost gates; current scripts do not yet implement the full suite.
+
 ## Optional BGE-M3 hybrid retrieval
 
 For local semantic/multilingual retrieval alongside BM25, see [hybrid recall setup and deep real-vault results](docs/hybrid-recall.md). This opt-in Python entry point keeps the Rust default lightweight; model downloads and RAM are required. It includes explicit index/recall/context commands and a private-data benchmark runner. Existing Pi/MCP hooks are not changed automatically.
+
+## Agent integrations (Pi, Hermes, any MCP client)
+
+ExoMind ships one MCP server (`exom mcp`) and one skill (`skills/exomind/SKILL.md`) that work for both Pi and Hermes Agent — no per-agent code paths. Wire everything up in one command:
+
+```bash
+scripts/install-agent.sh --agent all --notes-root ~/Yasna-Memory
+```
+
+`--agent pi` writes the `exomind` entry into `~/.pi/agent/mcp.json` and installs the skill to `~/.pi/agent/skills/exomind/`; `--agent hermes` runs `hermes mcp add exomind ...` and installs the skill to `~/.hermes/skills/exomind/`. Existing skills are left untouched unless you pass `--force`.
+
+Either agent then gets `exom_recall`, `exom_capture`, `exom_index`, and `exom_doctor` as tools. Non-MCP clients can shell out instead: `exom recall`, `exom capture`, and `exom pi-context` (plain markdown block for prompt injection, despite the Pi-flavoured name).
+
+Verify the connection with `hermes mcp test exomind` (Hermes) or `exom doctor` (both).
 
 ## Integration with OpenClaw & Codex
 
@@ -112,7 +130,8 @@ For local semantic/multilingual retrieval alongside BM25, see [hybrid recall set
 
 - `src/main.rs` – Rust-first CLI that powers `exom init/index/recall/doctor`
 - `src/exomind/` – deprecated Python runtime for `serve`/`mcp` or compatibility scripts
-- `scripts/` – Bootstrap helpers, hybrid retrieval tools, and benchmark runners
+- `scripts/` – Bootstrap helpers, agent installers, hybrid retrieval tools, and benchmark runners
+- `skills/exomind/` – Agent-neutral skill definition shared by Pi and Hermes
 - `.neural/` – generated cache files from `exom index` (gitignored)
 - `00_Inbox/`, `10_Projects/`, `20_Areas/`, `30_Resources/`, `99_Archives/` – optional template folders inspired by the PARA method
 - `Makefile` – convenience commands and aliases
