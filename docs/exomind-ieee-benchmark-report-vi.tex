@@ -1,0 +1,148 @@
+% Biên dịch hai lần bằng XeLaTeX; dùng lớp IEEEtran chính thức.
+\documentclass[conference]{IEEEtran}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{Latin Modern Mono}[Scale=0.8]
+\usepackage{amsmath,amssymb,booktabs,tabularx}
+\usepackage[hidelinks]{hyperref}
+\renewcommand{\abstractname}{Tóm tắt}
+\renewcommand{\IEEEkeywordsname}{Từ khóa}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{Tài liệu tham khảo}
+\title{Truy xuất lai cục bộ cho ExoMind:\\Báo cáo đánh giá trên kho ghi chú thực tế và khả năng tái lập}
+\author{\IEEEauthorblockN{ExoMind Project}\IEEEauthorblockA{Báo cáo nghiên cứu nội bộ\\Không phải công bố IEEE đã qua phản biện}}
+\begin{document}
+\maketitle
+\begin{abstract}
+Chúng tôi đánh giá truy xuất từ vựng và truy xuất vector tùy chọn trong ExoMind, một runtime bộ nhớ cục bộ dựa trên Markdown. Các phép đo đã hoàn tất trước đây trên kho thực tế gồm 13 ghi chú cho thấy kết hợp BM25 và BGE-M3 bằng reciprocal-rank fusion tăng tỷ lệ đưa nguồn đúng lên đầu từ 42/72 lên 52/72 trên tập phát triển đã được sử dụng, và từ 11/18 lên 15/18 trên các cách diễn đạt mới của những sự kiện đã biết. Lợi ích này đi kèm hồi quy thứ hạng ở một số câu và chi phí bộ nhớ đáng kể. Lượt chạy lại mới sử dụng snapshot cố định gồm 14 ghi chú và 90 câu hỏi đã được sử dụng; truy xuất native hoàn tất với Hit@1 đạt 53/90 và mức bao phủ đủ nguồn trong top-5 đạt 80/90. Lượt truy xuất vector mới không hoàn tất trong bối cảnh quan sát thấy áp lực tài nguyên trên máy chủ. Báo cáo tách biệt kết quả lịch sử đã hoàn tất, quan sát mới và các thành phần protocol chưa chạy. Bằng chứng hiện tại hỗ trợ tiếp tục đánh giá có kiểm soát bộ nhớ lai, không chứng minh ưu thế tổng quát hoặc cải thiện độ đúng của câu trả lời đầu cuối.
+\end{abstract}
+\begin{IEEEkeywords}
+bộ nhớ agent, BM25, BGE-M3, truy xuất lai, đánh giá, khả năng tái lập
+\end{IEEEkeywords}
+
+\section{Giới thiệu}
+Chất lượng bộ nhớ không thể được xác lập bằng một điểm truy xuất ở cấp ghi chú. Hệ thống có thể xếp một nguồn liên quan lên đầu nhưng bỏ sót nguồn khác cần thiết, lấy bằng chứng lỗi thời hoặc trả ứng viên cho câu hỏi không có thông tin hỗ trợ. Vì vậy, ExoMind tách truy xuất native nhẹ khỏi tầng truy xuất vector tùy chọn, đồng thời đánh giá thứ hạng nguồn, khả năng cung cấp bằng chứng, chi phí vận hành và các trường hợp thất bại quan sát được.
+
+Báo cáo ghi nhận hai nhóm bằng chứng riêng biệt: các phép đo hybrid đã hoàn tất trước đây và một lượt chạy lại mới. Các snapshot corpus khác nhau. Phân biệt này là bắt buộc: đặt điểm vector cũ cạnh điểm native mới không tạo thành một thí nghiệm đối đầu có kiểm soát.
+
+\section{Thiết kế hệ thống}
+\subsection{Truy xuất native}
+Implementation native ban đầu kết hợp mức trùng từ trong tiêu đề/đường dẫn, prior dựa trên số liên kết đến có chặn trên và trọng số TF--IDF của các từ khớp. Implementation cập nhật dùng mức liên quan nội dung BM25:
+\begin{equation}
+B(q,d)=\sum_{t\in q}\operatorname{IDF}(t)
+\frac{tf_{t,d}(k_1+1)}{tf_{t,d}+k_1(1-b+b|d|/\overline{|d|})},
+\end{equation}
+với $k_1=1.2$, $b=0.75$ và mỗi từ truy vấn chỉ được tính một lần. Cache TF--IDF hiện có của ExoMind vẫn đọc được nhờ khôi phục số đếm từ theo quy ước trọng số mà indexer đã lưu.
+
+Phân rã Unicode, loại dấu kết hợp và chuẩn hóa chữ đ được áp dụng nhất quán cho nội dung lập chỉ mục và truy vấn. Cách này hỗ trợ đối sánh có dấu/không dấu, nhưng không dịch giữa các ngôn ngữ. Graph boost chỉ được áp dụng sau khi có liên quan từ vựng hoặc nội dung. Trích đoạn gần phần khớp truy vấn thay thế việc luôn lấy đầu ghi chú.
+
+\subsection{Hợp nhất vector tùy chọn}
+Entry point Python tùy chọn mã hóa ghi chú gốc và truy vấn bằng embedding BGE-M3 cục bộ. Kết quả vector xếp theo cosine được kết hợp với thứ hạng native bằng reciprocal-rank fusion có trọng số bằng nhau:
+\begin{equation}
+S(d)=\frac{\mathbb{1}[d\in R_l]}{60+r_l(d)}+
+\frac{\mathbb{1}[d\in R_e]}{60+r_e(d)}.
+\end{equation}
+Hằng số thứ hạng và trọng số bằng nhau được cố định trước các lượt thử hybrid được báo cáo. Điểm này không phải độ tin cậy đã hiệu chuẩn. Rust native vẫn là mặc định; các hook Pi/MCP không tự động được thay thế.
+
+Fingerprint cache vector đối chiếu graph, nội dung nguồn, định danh model và đường dẫn. Việc ghi dùng file tạm riêng tư và thay thế atomic. Đường dẫn nguồn bị giới hạn trong notes root. Không gọi reader API và không công bố nội dung nguồn riêng tư trong báo cáo.
+
+\section{Protocol đánh giá}
+\subsection{Dữ liệu và mức độ đã sử dụng}
+Tập diagnostic hiện có gồm 72 câu phát triển: 22 sự kiện được diễn đạt bằng tiếng Anh, tiếng Việt có dấu và tiếng Việt không dấu, cùng sáu câu cần nhiều nguồn. Thêm 18 câu diễn đạt lại các sự kiện đã biết trong corpus; chúng không phải các sự kiện mới độc lập. Tám câu hỏi không có thông tin hỗ trợ được giữ riêng.
+
+Nhãn được soạn thủ công sau khi đọc corpus. Kết quả phát triển đã ảnh hưởng đến lựa chọn implementation. Cả lượt cũ lẫn lượt mới đều không phải nghiên cứu trên tập kiểm chứng độc lập chưa từng được sử dụng. Bảng~\ref{tab:snapshots} phân biệt các snapshot.
+\begin{table}[t]
+\caption{Các snapshot và trạng thái thực thi}
+\label{tab:snapshots}
+\centering\small
+\begin{tabularx}{\columnwidth}{@{}lcX@{}}
+\toprule
+Snapshot & Note & Trạng thái \\
+\midrule
+Đối chiếu upstream trước đây & 12 & Hoàn tất native, ablation vector và Zero-Mem upstream. \\
+Diagnostic hybrid tích hợp & 13 & Hoàn tất native/hybrid, 72+18 câu và các câu âm. \\
+Chạy lại mới & 14 & Hoàn tất native 90 câu; vector chưa hoàn tất. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Chỉ số}
+Hit@$k$ yêu cầu ít nhất một nguồn được gán nhãn nằm trong $k$ kết quả đầu. AllSources@$k$ yêu cầu tất cả nguồn được gán nhãn của câu hỏi. MRR@5 dùng nghịch đảo thứ hạng nguồn đúng đầu tiên, gán không cho câu không tìm thấy nguồn đúng trong top-5. Các chỉ số này đánh giá truy xuất, không đánh giá câu trả lời được sinh.
+
+Sự xuất hiện nguyên văn của các đoạn đáp án chuẩn trong context bị giới hạn chỉ là diagnostic. Nó không xác lập quan hệ suy ra, độ đúng theo thời gian hoặc mức trung thành với bằng chứng. Ghi chú, đoạn văn và ngân sách token của reader không phải những đơn vị đánh giá có thể thay thế cho nhau.
+
+\subsection{Chuẩn nghiên cứu được áp dụng}
+Protocol v1 chọn LongMemEval cleaned-S~\cite{longmem} làm đánh giá memory-QA công khai chính và LoCoMo~\cite{locomo} làm kiểm chứng bổ sung. Chỉ số tối ưu dự kiến là bao phủ toàn bộ bằng chứng cần thiết dưới ngân sách context 4.096 token của reader. Phân tích thống kê dự kiến dùng cluster bootstrap ghép cặp theo lịch sử dùng chung/nhóm sự kiện, với 10.000 lần lấy mẫu và seed 20261028. Đây là lựa chọn protocol, không phải phân tích đã hoàn tất trong báo cáo.
+
+Official QA, chấm nhóm bằng chứng theo token reader, tập kiểm chứng độc lập và khoảng tin cậy ghép cặp \emph{chưa chạy}. Báo cáo không tuyên bố đã kiểm chứng đầy đủ protocol.
+
+\section{Kết quả lịch sử đã hoàn tất}
+\begin{table}[t]
+\caption{Diagnostic tích hợp đã hoàn tất trên 13 ghi chú}
+\label{tab:historical}
+\centering\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Chỉ số & Native BM25 & Hybrid \\
+\midrule
+Hit@1, tập phát triển & 42/72 & 52/72 \\
+AllSources@5, phát triển & 62/72 & 63/72 \\
+MRR@5, tập phát triển & 0.7060 & 0.7782 \\
+Hit@1, diễn đạt mới & 11/18 & 15/18 \\
+AllSources@5, câu mới & 18/18 & 18/18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Trong lượt 13 ghi chú đã hoàn tất, hybrid cải thiện thứ hạng nguồn đúng đầu tiên ở 14 câu phát triển, giảm ở năm câu và hòa ở các câu còn lại. Với 18 câu diễn đạt lại, các số tương ứng là sáu cải thiện và một hồi quy. Top-5 không đổi trong các lần lặp đã quan sát. Bao phủ đầy đủ các đoạn đáp án nguyên văn trong 3.000 ký tự đạt 46/72; không sử dụng mô hình QA.
+
+Cả native và hybrid đều trả ứng viên nguồn cho tám câu không có thông tin hỗ trợ. Trả ứng viên không tự nó là câu trả lời bịa đặt, nhưng không cung cấp bằng chứng về khả năng từ chối đáng tin cậy.
+
+Trước đó, Zero-Mem fusion chính thức~\cite{zeromem} đạt Hit@1 49/72 trên snapshot 12 ghi chú; ablation hybrid cục bộ đạt 52/72 nhưng AllSources@5 thấp hơn, 64/72 so với 67/72. Các kết quả này không chứng minh chiến thắng trên mọi mặt. Ngoài ra, hierarchy upstream không trả kết quả nguồn/turn dùng được với adapter nguyên-note, khiến kết luận về hierarchy của hệ thống đầy đủ chưa xác định.
+
+\subsection{Chi phí vận hành lịch sử}
+Trong lượt tích hợp đã hoàn tất, tải model/cache mất 7.40 giây. Batch 80 câu phát triển/không có đáp án mất 8.16 giây, lần lặp mất 11.58 giây. Batch 18 câu diễn đạt lại mất 3.17 giây, lần lặp mất 2.19 giây. Median latency của native CLI, gồm startup, là 3.57 mili giây trong lượt phát triển. Peak RSS của tiến trình benchmark là 2.401.444 KiB; cache vector JSON chiếm 296.261 byte, chưa gồm trọng số model. Đây là quan sát trong một môi trường, không phải phân bố latency hoặc speedup có thể đối chiếu trực tiếp với thời gian chỉ xếp hạng.
+
+\section{Lượt chạy lại: kết quả và trở ngại}
+Corpus mới có 14 ghi chú, dùng cùng tập 72+18 câu đã được sử dụng. Index native mới và truy xuất qua executable đã hoàn tất:
+\begin{table}[h]
+\caption{Native chạy lại; vector chưa hoàn tất}
+\centering\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Chỉ số & Native, 90 câu \\
+\midrule
+Hit@1 & 53/90 (58.9\%) \\
+Hit@3 & 80/90 (88.9\%) \\
+AllSources@3 & 78/90 (86.7\%) \\
+AllSources@5 & 80/90 (88.9\%) \\
+MRR@5 & 0.7167 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Lượt vector hết thời gian trước khi tạo được index/report mới hoàn chỉnh. Một phép thử import riêng cũng hết thời gian. Quan sát trên host cho thấy khoảng 13 GiB bộ nhớ đang dùng trên tổng 15 GiB, khoảng 238 MiB trống, 2.1 GiB khả dụng và swap 4 GiB gần như đầy. Các quan sát phù hợp với tình trạng tranh chấp tài nguyên, nhưng không cô lập được mức đóng góp nhân quả của nó vào từng lần timeout. Không dừng các tiến trình không liên quan trên host.
+
+Vì vậy, báo cáo không ghép điểm native mới với điểm hybrid lịch sử để gọi đó là kết quả đối đầu mới. So sánh vector mới, percentile latency và phân tích bootstrap được yêu cầu vẫn chưa hoàn tất. Không suy tạo khoảng tin cậy mới từ các điểm tổng hợp cũ.
+
+\section{Tính hợp lệ, giới hạn và bước tiếp theo}
+Kho thực nhỏ, nhãn đã được sử dụng và các cách diễn đạt dùng chung sự kiện. Cũng không loại trừ khả năng benchmark công khai đã xuất hiện trong dữ liệu huấn luyện model. Không đưa ra tuyên bố về ý nghĩa thống kê hoặc khả năng tổng quát hóa.
+
+Lượt tiếp theo có kiểm soát phải cố định hash corpus dùng chung, bảo đảm đủ tài nguyên tính toán, hoàn tất native/vector/hybrid/upstream trên chính snapshot đó và kiểm tra định danh bằng chứng cùng adapter session của upstream. So sánh context phải đếm token thật bằng tokenizer reader được công bố, thay vì thay bằng token encoder hoặc đại diện nguyên-note.
+
+Nhãn độc lập cần tách nhóm sự kiện/chủ đề giữa tập phát triển và kiểm chứng. Cần reader chung và prompt/ngân sách cố định để đánh giá memory QA, độ đúng cập nhật, suy luận thời gian, từ chối và hỗ trợ dẫn nguồn. Sử dụng reader bên ngoài với dữ liệu riêng tư cần được cho phép. Hybrid tùy chọn hiện được hỗ trợ như một tính năng hữu ích trong thực nghiệm, không phải cơ chế bộ nhớ mới đã được xác lập hoặc mô hình não sinh học.
+
+\section{Kết luận}
+Các phép đo cục bộ đã hoàn tất hỗ trợ hybrid retrieval như một cải thiện thực dụng về thứ hạng nguồn đầu tiên, đi kèm chi phí bộ nhớ đáng kể và một số hồi quy. Native chạy lại đã hoàn tất, nhưng vector chạy lại chưa hoàn tất. Phân biệt này là một phần của tính hợp lệ nghiên cứu: định dạng IEEE chỉn chu hoặc một thử nghiệm thành công trước đây không thay thế cho phép đo hiện tại còn thiếu.
+
+\section*{Tuyên bố về artifact và công bố}
+Baseline phần mềm là merge commit \texttt{5dd66b2}. Artifact riêng tư được lưu ngoài repository công khai. Báo cáo dùng lớp IEEEtran conference chính thức và bố cục hai cột; không phải công bố đã được IEEE chấp nhận, bảo trợ hoặc phản biện. Protocol và tài liệu implementation công khai đi kèm ExoMind~\cite{exom}.
+
+\begin{thebibliography}{00}
+\bibitem{longmem} D. Wu et al., ``LongMemEval: Benchmarking Chat Assistants on Long-Term Interactive Memory,'' ICLR, 2025. [Trực tuyến]. Địa chỉ: \url{https://github.com/xiaowu0162/LongMemEval}
+\bibitem{locomo} A. Maharana et al., ``Evaluating Very Long-Term Conversational Memory of LLM Agents,'' ACL, 2024. [Trực tuyến]. Địa chỉ: \url{https://github.com/snap-research/locomo}
+\bibitem{zeromem} Y. Xiao et al., ``Zero-Mem: Zero-Token Memory Operations for LLM Agents,'' arXiv:2607.29377, 2026. Commit upstream đã đánh giá: \texttt{e1b2f8e}. [Trực tuyến]. Địa chỉ: \url{https://github.com/Zero-Mem/Zero-mem}
+\bibitem{exom} ExoMind Project, ``ExoMind source and evaluation documentation.'' [Trực tuyến]. Địa chỉ: \url{https://github.com/zhugez/ExoMind}
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,257 @@
+% Compile: xelatex -interaction=nonstopmode -halt-on-error exomind-retrieval-report.tex
+% Standalone report. All experimental numbers are local observations, not paper claims.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{JetBrains Mono}[Scale=0.82]
+\usepackage{amsmath,amssymb,booktabs,tabularx,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,citecolor=blue!45!black}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible,frame=single}
+\renewcommand{\abstractname}{Tóm tắt}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{Tài liệu tham khảo}
+\title{Tối ưu truy xuất bộ nhớ ExoMind:\\BM25, chuẩn hóa tiếng Việt và kết hợp BGE-M3\\\large Báo cáo thực nghiệm trên kho ghi chú cá nhân thực tế}
+\author{ExoMind Project\\\small Báo cáo kỹ thuật nội bộ; không phải công bố phản biện}
+\date{Ngày 28 tháng 10 năm 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Báo cáo trình bày quá trình cải thiện tầng truy xuất của ExoMind từ mô hình kết hợp TF--IDF, đối sánh từ và mức độ liên kết sang BM25 có chuẩn hóa dấu tiếng Việt, điều kiện liên quan cho graph boost và trích đoạn phụ thuộc truy vấn. Một tầng tùy chọn dùng BGE-M3 được bổ sung bằng reciprocal-rank fusion (RRF), không thay đổi mặc định Rust nhẹ. Trên corpus thực tế gồm 13 ghi chú, tầng hybrid tăng Hit@1 từ 42/72 lên 52/72 trên tập phát triển, và từ 11/18 lên 15/18 trên các câu diễn đạt mới của những sự kiện đã biết. Tuy nhiên, thứ hạng nguồn đúng đầu tiên giảm ở 5 câu phát triển và 1 câu diễn đạt mới; hệ thống chưa có cơ chế từ chối đáng tin cậy khi thông tin không tồn tại. Đánh giá Zero-Mem chính thức trên snapshot trước đó cho thấy giá trị của truy xuất ngữ nghĩa, nhưng không đủ để khẳng định ưu thế tổng quát của ExoMind hybrid. Báo cáo phân biệt các snapshot, chi phí thực thi, kiểm chứng phần mềm và giới hạn của đánh giá thủ công quy mô nhỏ. Không có dữ liệu riêng tư hoặc câu trả lời sinh bởi LLM được công bố.
+\end{abstract}
+\noindent\textbf{Từ khóa:} agent memory, hybrid retrieval, BM25, BGE-M3, tiếng Việt, RRF, local-first.
+
+\section{Giới thiệu}
+Tầng bộ nhớ của một agent phải tìm được bằng chứng liên quan trước khi mô hình trả lời sử dụng chúng. Trong kho ghi chú đa ngôn ngữ, một truy vấn có thể không dùng cùng thuật ngữ, cùng ngôn ngữ hoặc cùng cách viết dấu với tài liệu gốc. Đồng thời, một ghi chú dài hoặc có nhiều backlink không nhất thiết cung cấp bằng chứng tốt hơn một ghi chú ngắn và chính xác.
+
+ExoMind lưu nguồn dưới dạng Markdown và lập chỉ mục cục bộ. Phiên bản ban đầu xếp hạng bằng đối sánh tiêu đề/đường dẫn, tổng trọng số TF--IDF của từ khớp và một graph prior dựa trên số liên kết đến. Các quan sát thực nghiệm thúc đẩy ba câu hỏi: (i) cải thiện lexical retrieval có đủ không; (ii) dense retrieval đóng góp thêm bao nhiêu; và (iii) lợi ích có đáng với chi phí vận hành và hồi quy không?
+
+Báo cáo đóng góp một mô tả tái lập được về thay đổi phần mềm, các phép đo trên dữ liệu thực và các giới hạn của chúng. Đây là \emph{engineering evaluation}, không phải thử nghiệm độc lập có kiểm soát đầy đủ hoặc bằng chứng về năng lực trả lời câu hỏi cuối cùng.
+
+\section{Bối cảnh và hệ thống đối chiếu}
+\subsection{ExoMind ban đầu}
+Điểm ban đầu gồm ba thành phần:
+\begin{equation}
+S_0(q,d)=w_l L(q,d)+w_g G(d)+w_s T(q,d),
+\end{equation}
+trong đó $L$ là độ trùng từ ở tiêu đề/đường dẫn, $G$ là ảnh hưởng liên kết đến có chặn trên, và $T$ là tích vô hướng giữa số lần xuất hiện từ trong truy vấn và vector TF--IDF của ghi chú. Thành phần mang tên \texttt{semantic} trong CLI không phải dense embedding. Tokenizer ASCII cũ làm mất cấu trúc từ tiếng Việt có dấu; graph prior có thể tạo điểm cho ứng viên hoàn toàn không khớp truy vấn.
+
+\subsection{Zero-Mem và phạm vi học hỏi}
+Zero-Mem~\cite{zeromem} đề xuất giữ trace gốc và tổ chức truy xuất qua entity--context graph cùng hierarchy thời gian, không dùng lời gọi LLM cho memory operations. Trong phiên làm việc này, mã upstream tại commit \texttt{e1b2f8e} được chạy cục bộ với BGE-M3 và spaCy \texttt{en\_core\_web\_trf}. Không chạy reader LLM hoặc hiệu chỉnh câu trả lời.
+
+Cần phân biệt \emph{Zero-Mem chính thức} với prototype \emph{Zero-Mem-inspired} của dự án. Prototype dùng BM25, heuristic thực thể viết hoa, Personalized PageRank và paragraph neighborhood; nó không tái hiện đầy đủ NER, dense routing, session hierarchy hoặc calibration của upstream. Không sao chép mã upstream vào tầng hybrid được tích hợp.
+
+\section{Phương pháp cải tiến}
+\subsection{BM25 và tương thích cache}
+Nội dung được xếp hạng bằng BM25:
+\begin{equation}
+\operatorname{BM25}(q,d)=\sum_{t\in\operatorname{unique}(q)}
+\log\left(1+\frac{N-df_t+0.5}{df_t+0.5}\right)
+\frac{tf_{t,d}(k_1+1)}{tf_{t,d}+k_1(1-b+b|d|/\overline{|d|})},
+\end{equation}
+với $k_1=1.2$, $b=0.75$. Các thống kê độ dài ở đây dựa trên token được lập chỉ mục, không phải số ký tự hoặc token của LLM.
+
+Để giữ khả năng đọc schema graph cũ, runtime khôi phục số đếm từ từ trọng số TF--IDF đã lưu:
+\begin{equation}
+\widehat{tf}_{t,d}=\frac{v_{t,d}}{1+\log((N+1)/(df_t+1))}.
+\end{equation}
+Cách khôi phục áp dụng cho cache do indexer ExoMind tạo theo công thức đó; không phải phép chuyển đổi cho mọi vector tùy ý. Cờ lịch sử \texttt{--semantic-weight} nay điều khiển thành phần BM25, không phải dense similarity.
+
+\subsection{Chuẩn hóa tiếng Việt và graph gating}
+Cả truy vấn và nội dung được phân rã Unicode NFD, loại combining marks và ánh xạ \texttt{đ/Đ} sang \texttt{d/D} trước khi tách token. Đây là chuẩn hóa orthography, không phải dịch ngôn ngữ hoặc giải quyết mọi hiện tượng tiếng Việt. Gộp dấu cũng có thể gộp những từ khác nghĩa.
+
+Ứng viên không có cả lexical match lẫn content match bị loại trước khi cộng graph boost. Vì vậy, số backlink không còn tự tạo ra liên quan đối với truy vấn hoàn toàn không khớp. Cơ chế này không xác định được một câu hỏi có đáp án hay không khi vẫn còn từ trùng.
+
+Graph cũ vẫn đọc được, nhưng cần index lại để phục hồi những từ có dấu đã bị tokenizer trước đó bỏ mất. Chỉ chuẩn hóa truy vấn không thể tái tạo thông tin không tồn tại trong cache.
+
+\subsection{Trích đoạn theo truy vấn}
+Thay vì luôn lấy đầu note, runtime chọn dòng có số token trùng truy vấn lớn nhất, ưu tiên dòng sớm hơn nếu hòa điểm, rồi giữ nguyên văn từ đó trong giới hạn excerpt. Đây là lựa chọn bằng chứng lexical đơn giản; nó không đảm bảo bao phủ mọi đáp án, không suy luận entailment và không kiểm tra mâu thuẫn theo thời gian.
+
+\subsection{BGE-M3 và hợp nhất thứ hạng}
+Tầng tùy chọn mã hóa nguyên ghi chú và truy vấn bằng BGE-M3. Dense ranking dựa trên cosine similarity của vector chuẩn hóa. Với $r_l(d)$ và $r_e(d)$ là thứ hạng lexical và embedding, điểm hybrid là:
+\begin{equation}
+S_{\mathrm{RRF}}(q,d)=\mathbb{1}_{d\in R_l}\frac{1}{60+r_l(d)}+
+\mathbb{1}_{d\in R_e}\frac{1}{60+r_e(d)}.
+\end{equation}
+Hai nhánh có trọng số bằng nhau; hằng số 60 được cố định trước các lượt thử hybrid. RRF không phải xác suất hay độ tin cậy đã hiệu chuẩn. Một nguồn chỉ có mặt ở dense ranking vẫn có thể được truy xuất khi lexical retrieval bỏ sót.
+
+Implementation là entry point Python tùy chọn \texttt{scripts/exom\_hybrid.py}. Rust/BM25 vẫn là mặc định; các hook Pi/MCP hiện tại không tự chuyển sang hybrid. Các lệnh \texttt{index}, \texttt{recall} và \texttt{pi-context} cho phép sử dụng tường minh; \texttt{Hybrid.search\_many} khấu hao chi phí tải model cho batch.
+
+\subsection{An toàn dữ liệu và cache}
+Cache lưu embedding và đường dẫn, không được xem là dữ liệu công khai. Fingerprint bao gồm graph và nội dung nguồn hiện tại; model identifier và tập đường dẫn phải khớp. Cache cũ hoặc ma trận không hợp lệ bị từ chối. Ghi cache/report dùng file tạm riêng tư và thay thế atomic. Đường dẫn nguồn phải nằm trong notes root; cache không được ghi đè graph hoặc note.
+
+Tải trọng số model ban đầu cần truy cập nguồn model, nhưng nội dung note không được gửi đến reader API. Chế độ offline dùng trọng số đã cache. Benchmark và kết quả chi tiết trên dữ liệu thật được giữ ngoài repository công khai.
+
+\section{Thiết kế thực nghiệm}
+\subsection{Các snapshot và tập câu hỏi}
+Các lượt thử không dùng một corpus bất biến xuyên suốt. Bảng~\ref{tab:protocol} phân biệt chúng để tránh gộp kết quả không tương đương.
+\begin{table}[ht]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}lclX@{}}
+\toprule
+Lượt & Note & Truy vấn & Vai trò \\
+\midrule
+S0 & 28 & 24 & Synthetic diagnostic; phát triển prototype, không đại diện dữ liệu thật. \\
+R1 & 12 & 16 & Thử nghiệm nguồn đúng ban đầu với Zero-Mem upstream. \\
+R2 & 12 & 72 + 8 âm & Benchmark sâu; nhãn nguồn và answer anchors cố định trước lượt chạy. \\
+R3 & 12 & 72 + 18 mới & Ablation dense-only và hybrid RRF; câu mới là diễn đạt lại sự kiện đã biết. \\
+R4 & 13 & 72 + 18 mới + 8 âm & Kiểm thử code hybrid tích hợp; corpus có thêm một note. \\
+\bottomrule
+\end{tabularx}
+\caption{Các snapshot thực nghiệm. ``Âm'' là câu hỏi không có đáp án được gán nhãn trong corpus.}\label{tab:protocol}
+\end{table}
+
+Tập 72 câu gồm 22 sự kiện, mỗi sự kiện có ba biểu đạt: Anh, Việt có dấu, Việt không dấu; thêm 6 câu yêu cầu nhiều nguồn. Vì thế, 72 câu không phải 72 sự kiện độc lập. Người soạn đã đọc corpus trước khi tạo nhãn; tập 18 câu mới không phải tập facts độc lập và không do bên thứ ba tạo. Thay đổi native được phát triển sau khi xem kết quả R2, nên kết quả native mới trên R2 là development-set measurement.
+
+\subsection{Chỉ số}
+Với tập nguồn đúng $E_q$ và top-$k$ nguồn $R_q^k$:
+\begin{align}
+\operatorname{Hit@}k&=\frac{1}{|Q|}\sum_q\mathbb{1}[E_q\cap R_q^k\ne\varnothing],\\
+\operatorname{AllSources@}k&=\frac{1}{|Q|}\sum_q\mathbb{1}[E_q\subseteq R_q^k],\\
+\operatorname{MRR@5}&=\frac{1}{|Q|}\sum_q\begin{cases}1/r_q,&r_q\le5,\\0,&\text{không tìm thấy trong top-5.}\end{cases}
+\end{align}
+$r_q$ là thứ hạng của nguồn đúng đầu tiên. Hit@1 trên câu nhiều nguồn không có nghĩa đã đủ bằng chứng.
+
+Một diagnostic bổ sung kiểm tra answer anchors nguyên văn trong context bị chặn ngân sách. Anchor availability không tương đương với QA accuracy, hỗ trợ suy luận hay tính đúng của diễn giải thời gian. Các context 256 whitespace words và 3000 ký tự là hai giao thức khác nhau, không được so sánh như cùng một phép đo.
+
+\section{Kết quả}
+\subsection{Native cải tiến và upstream trên snapshot R2}
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Hệ thống & Hit@1 & Hit@3 & AllSources@5 & MRR@5 \\
+\midrule
+ExoMind ban đầu & 29/72 & 51/72 & 55/72 & 0.556 \\
+Prototype inspired & 42/72 & 56/72 & 63/72 & 0.688 \\
+Zero-Mem fusion & 49/72 & 63/72 & 67/72 & 0.782 \\
+Native BM25 tối ưu & 42/72 & 62/72 & 62/72 & 0.706 \\
+\bottomrule
+\end{tabular}
+\caption{Kết quả trên snapshot 12 note R2; native mới được đánh giá trên tập phát triển.}
+\end{table}
+
+Native tối ưu tăng Hit@1 từ 40.3\% lên 58.3\%, nhưng chưa đạt fusion upstream 68.1\%. Đây là cải thiện của một nhóm thay đổi; không có ablation cô lập đầy đủ để quy toàn bộ lợi ích cho BM25 hoặc chuẩn hóa dấu.
+
+Nhánh graph-only upstream đạt Hit@1 48/72. Hierarchy không trả passage source hoặc selected turns với adapter nguyên-note được dùng trong thử nghiệm. Đây là hạn chế tương thích đầu vào, không phải bằng chứng rằng hierarchy không hữu ích trong đúng cấu trúc session/turn của nó. Repeat fusion giữ nguyên top-5. Bất kỳ kết luận về Zero-Mem đầy đủ đều phải tính đến giới hạn adapter này.
+
+\subsection{Ablation embedding trên snapshot R3}
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Hệ thống & Hit@1 cũ & AllSources@5 cũ & Hit@1 mới & MRR@5 mới \\
+\midrule
+Native BM25 & 42/72 & 62/72 & 10/18 & 0.741 \\
+BGE-M3 độc lập & 48/72 & 63/72 & 16/18 & 0.914 \\
+Native + BGE-M3 & 52/72 & 64/72 & 15/18 & 0.907 \\
+Zero-Mem fusion & 49/72 & 67/72 & 14/18 & 0.889 \\
+\bottomrule
+\end{tabular}
+\caption{Ablation local trên cùng snapshot 12 note. ``Mới'' chỉ cách diễn đạt mới, không phải facts độc lập.}
+\end{table}
+
+Embedding cung cấp lợi ích bổ sung mà lexical normalization đơn thuần không đạt được trên tập này. Hybrid vượt fusion upstream ở Hit@1 trong lượt R3, nhưng thấp hơn về AllSources@5 trên tập 72 câu. Dense-only cũng vượt hybrid ở Hit@1 của 18 câu mới. Vì vậy không thể diễn giải kết quả như một chiến thắng toàn diện của một kiến trúc.
+
+\subsection{Đánh giá code tích hợp trên R4}
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Chỉ số & Native BM25 & Hybrid tích hợp \\
+\midrule
+Hit@1, 72 câu & 42/72 (58.3\%) & 52/72 (72.2\%) \\
+AllSources@5, 72 câu & 62/72 & 63/72 \\
+MRR@5, 72 câu & 0.7060 & 0.7782 \\
+Hit@1, 18 diễn đạt mới & 11/18 (61.1\%) & 15/18 (83.3\%) \\
+AllSources@5, 18 câu mới & 18/18 & 18/18 \\
+\bottomrule
+\end{tabular}
+\caption{Code hybrid tích hợp trên 13 note. Không đối chiếu trực tiếp với upstream ở R2/R3 vì corpus đã thay đổi.}
+\end{table}
+
+Trên R4, thứ hạng nguồn đúng đầu tiên tăng ở 14 câu phát triển, giảm ở 5 câu và giữ nguyên ở 53 câu; trên tập diễn đạt mới, các số tương ứng là 6, 1 và 11. Kết quả này cho thấy tăng aggregate không loại trừ hồi quy cá biệt. Repeat top-5 ổn định trong các lượt đo đã thực hiện.
+
+Answer anchors xuất hiện đầy đủ trong context hybrid tối đa 3000 ký tự ở 46/72 câu (63.9\%). Tất cả 8 câu hỏi âm vẫn nhận ứng viên từ cả native lẫn hybrid. Không chạy reader nên không suy ra mô hình sẽ trả lời sai; đồng thời, không có cơ sở để tuyên bố hệ thống biết từ chối hoặc đã giải quyết hallucination.
+
+\subsection{Chi phí tính toán}
+\begin{table}[ht]
+\centering
+\begin{tabularx}{\linewidth}{@{}Xr@{}}
+\toprule
+Đại lượng quan sát trên CPU, R4 & Giá trị \\
+\midrule
+Tải model và dense cache, lượt development & 7.40 s \\
+Batch 80 truy vấn, gồm 72 câu và 8 câu âm & 8.16 s \\
+Lặp lại batch 80 truy vấn & 11.58 s \\
+Batch 18 câu diễn đạt mới & 3.17 s \\
+Lặp lại batch 18 câu & 2.19 s \\
+Native CLI median, gồm startup, lượt development & 3.57 ms \\
+Peak RSS của tiến trình benchmark development & 2,401,444 KiB \\
+Dense JSON cache, không gồm model weights & 296,261 bytes \\
+\bottomrule
+\end{tabularx}
+\caption{Phép đo một môi trường. Không phải percentile latency, speedup thuật toán hoặc bảo đảm hiệu năng.}
+\end{table}
+
+BGE-M3 tăng chi phí bộ nhớ và startup; mỗi lần chạy CLI riêng lẻ tải lại model. Các batch amortize chi phí này. Peak RSS khoảng 2.3 GiB là của toàn tiến trình đo, không chỉ riêng embedding matrix. Thời gian native index và model download không được instrument trong R4. Lượt hoàn tất index Zero-Mem trước đó mất 550 s nhưng tái sử dụng cache sau các lần timeout; không dùng số đó làm phép so sánh cold-index công bằng.
+
+\section{Triển khai và kiểm chứng phần mềm}
+Các thay đổi đã merge vào \texttt{main}, merge commit \texttt{5dd66b2}. Thành phần chính gồm:
+\begin{itemize}
+\item \texttt{src/main.rs}: BM25, token folding, relevance gating và excerpt phụ thuộc truy vấn.
+\item \texttt{scripts/exom\_hybrid.py}: dense index, RRF recall và context tùy chọn.
+\item \texttt{scripts/benchmark\_hybrid.py}: benchmark riêng tư, category metrics, hồi quy và resource measurements.
+\item \texttt{requirements-hybrid.txt}: dependency Python tùy chọn, không ảnh hưởng đường cài Rust mặc định.
+\end{itemize}
+Build release cùng 8 Rust tests và 7 Python tests đã chạy qua sau merge. Review phát hiện và sửa lỗi import khi dùng package, không nhất quán chuẩn hóa dấu ở excerpt và thiếu tạo thư mục cha cho report. Các kiểm tra bao gồm RRF tie/duplicate handling, giới hạn context, stale-cache rejection và private report output. CI Ubuntu, macOS và Windows đã qua trong quy trình merge; trạng thái deploy Vercel lỗi có sẵn được người vận hành cho phép bỏ qua. Vì vậy không mô tả toàn bộ external checks là xanh.
+
+\section{Giới hạn và nguy cơ đối với tính hợp lệ}
+\paragraph{Quy mô và thiên lệch nhãn.} Kho thực chỉ có 12--13 note, câu hỏi và đáp án do cùng một người đánh giá soạn sau khi đọc nguồn. Các paraphrase tương quan mạnh; không báo cáo kiểm định ý nghĩa thống kê hoặc khoảng tin cậy như thể chúng là mẫu độc lập.
+
+\paragraph{Phát triển trên benchmark.} Native thay đổi sau khi đã quan sát điểm trên tập phát triển. Tập câu mới vẫn dùng facts đã biết. Kết quả không đại diện cho corpus mới, người dùng mới hoặc domain ngoài kho đang xét.
+
+\paragraph{Khác biệt adapter và ngân sách.} Upstream được chạy trên nguyên note, không trên cấu trúc hội thoại session/turn được tái tạo và kiểm chứng đầy đủ. Top-$k$ note không phải ngân sách token bằng nhau. Chưa có QA reader chung, chưa đo answer F1, faithfulness hoặc khả năng suy luận thời gian.
+
+\paragraph{Dense chunking và metadata.} Hybrid mã hóa nguyên note; văn bản dài chịu giới hạn đầu vào của encoder. Chưa có đánh giá tách chunk, reranker, provenance-level temporal filtering hoặc incremental embedding update. Fingerprint phát hiện thay đổi nhưng không giải quyết mọi dạng dataset shift.
+
+\paragraph{Từ chối và riêng tư.} RRF không cung cấp ngưỡng answerability. Unsupported queries vẫn có ứng viên. Embedding là artifact riêng tư; offline processing không tự động biến cache thành dữ liệu an toàn để công bố.
+
+\section{Hướng nghiên cứu tiếp theo}
+Ưu tiên là đóng băng snapshot corpus và cấu hình, gán nhãn facts mới bởi người đánh giá độc lập, rồi chạy cùng adapter/ngân sách context cho native, hybrid và upstream. Tiếp theo cần đánh giá passage-level bằng chứng, negative-query abstention, temporal contradictions và generated answers với reader thống nhất nếu được cho phép. Benchmark tài nguyên nên phân biệt cold/warm startup, cold/incremental indexing, peak RSS, batch throughput và latency distribution. Chỉ thêm chunking, reranker hoặc graph propagation sau khi ablation chứng minh lợi ích vượt chi phí và hồi quy.
+
+\section{Kết luận}
+ExoMind đã cải thiện lexical retrieval và bổ sung dense retrieval theo hướng local-first, có thể bật riêng mà không làm nặng đường chạy mặc định. Kết quả quan sát cho thấy BGE-M3 kết hợp BM25 nâng đáng kể khả năng đưa nguồn đúng lên đầu trên kho thực đang xét. Tuy nhiên, coverage nhiều nguồn, câu âm, adapter upstream và chi phí model vẫn là giới hạn quan trọng. Kết luận được hỗ trợ là \emph{hybrid hữu ích trong diagnostic này}, không phải ExoMind đã vượt Zero-Mem tổng quát hoặc đã nâng chất lượng QA cuối cùng.
+
+\appendix
+\section{Tái lập và quản lý artifact}
+Chạy từ repository root. Cần XeLaTeX để biên dịch báo cáo tiếng Việt. Ví dụ kiểm chứng phần mềm:
+\begin{lstlisting}
+cargo build --release --locked
+cargo test --locked
+cargo clippy --all-targets --locked -- -D warnings
+python3 -m unittest discover -s scripts -p 'test_*.py'
+\end{lstlisting}
+Ví dụ benchmark sau khi tạo native graph và dense cache theo tài liệu \texttt{docs/hybrid-recall.md}:
+\begin{lstlisting}
+python scripts/benchmark_hybrid.py \
+  --graph /private/cache/graph.json \
+  --cache /private/cache/dense.json \
+  --queries /private/labels.json \
+  --output /private/report.json \
+  --exom target/release/exom --offline
+\end{lstlisting}
+Không công bố corpus, câu hỏi, anchors hoặc source rankings. Các bảng trong báo cáo chỉ chứa số liệu tổng hợp; replication trên corpus riêng cần tự cung cấp nhãn và chấp nhận rằng không thể tái lập độc lập hoàn toàn số liệu private-vault từ repository công khai.
+
+\begin{thebibliography}{9}
+\bibitem{zeromem}
+Y. Xiao et al. \emph{Zero-Mem: Zero-Token Memory Operations for LLM Agents}. arXiv:2607.29377, 2026. Mã nguồn đã kiểm tra: \url{https://github.com/Zero-Mem/Zero-mem}, commit \texttt{e1b2f8ef98a3d023478ddb2049aba11753296d42}. Các số đo trong báo cáo này là phép đo local, không phải số liệu sao chép từ paper.
+\bibitem{exomind}
+ExoMind Project. \emph{ExoMind source and implementation documentation}. \url{https://github.com/zhugez/ExoMind}, merge commit \texttt{5dd66b2042dceacada1ced17ded8809b750bd341}. Tài liệu repository: \texttt{docs/recall-evaluation.md}, \texttt{docs/hybrid-recall.md}, \texttt{docs/zero-mem-inspired.md}.
+\end{thebibliography}
+\end{document}

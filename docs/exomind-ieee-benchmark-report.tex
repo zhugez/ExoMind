@@ -1,0 +1,144 @@
+% Build with XeLaTeX twice. IEEEtran is the actual upstream document class.
+\documentclass[conference]{IEEEtran}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{Latin Modern Mono}[Scale=0.8]
+\usepackage{amsmath,amssymb,booktabs,tabularx}
+\usepackage[hidelinks]{hyperref}
+\title{Local Hybrid Retrieval for ExoMind:\\A Real-Vault Diagnostic and Reproducibility Report}
+\author{\IEEEauthorblockN{ExoMind Project}\IEEEauthorblockA{Internal research report\\Not a peer-reviewed IEEE publication}}
+\begin{document}
+\maketitle
+\begin{abstract}
+We evaluate lexical and optional dense retrieval in ExoMind, a local Markdown-based memory runtime. Prior completed measurements on a 13-note real vault show that BM25 plus BGE-M3 reciprocal-rank fusion improves first-source accuracy from 42/72 to 52/72 on exposed development questions, and from 11/18 to 15/18 on additional paraphrases of known facts. These improvements coexist with individual ranking regressions and a substantial model-memory footprint. A newly requested rerun uses a frozen 14-note snapshot and 90 exposed questions; native retrieval completes with Hit@1 of 53/90 and all-source coverage at five of 80/90. The new dense rerun does not complete under observed host resource pressure. We explicitly separate completed historical measurements from fresh observations and unexecuted protocol components. The evidence supports further controlled hybrid-memory evaluation, not a claim of general superiority or improved end-to-end answer correctness.
+\end{abstract}
+\begin{IEEEkeywords}
+agent memory, BM25, BGE-M3, hybrid retrieval, evaluation, reproducibility
+\end{IEEEkeywords}
+
+\section{Introduction}
+Memory quality cannot be established by a single note-level retrieval score. A system may rank one relevant source first while missing another required source, retrieve outdated evidence, or return candidates for an unsupported question. ExoMind therefore separates lightweight native retrieval from an optional dense retrieval layer and evaluates source ranking, evidence availability, operational cost, and observed failure cases.
+
+This report documents two distinct forms of evidence: previously completed hybrid measurements and a newly attempted rerun. The corpus snapshots differ. The distinction is essential: reusing old dense scores beside new native scores would not be a controlled experiment.
+
+\section{System Design}
+\subsection{Native Retrieval}
+The original native implementation combined title/path overlap, a capped incoming-link prior, and matching TF--IDF weights. The updated implementation uses BM25 content relevance:
+\begin{equation}
+B(q,d)=\sum_{t\in q} \operatorname{IDF}(t)
+\frac{tf_{t,d}(k_1+1)}{tf_{t,d}+k_1(1-b+b|d|/\overline{|d|})},
+\end{equation}
+with $k_1=1.2$, $b=0.75$, and unique query terms. Existing ExoMind TF--IDF caches remain readable through reconstruction of term counts using the indexer's stored weighting convention.
+
+Unicode decomposition, combining-mark removal, and Vietnamese barred-d normalization are applied consistently to indexed content and queries. This supports accented/unaccented matching but does not translate between languages. A graph boost is applied only after lexical or content relevance exists. Query-local excerpts replace unconditional head-of-note excerpts.
+
+\subsection{Optional Dense Fusion}
+The optional Python entry point encodes original notes and queries with local BGE-M3 embeddings. Cosine-ranked dense results are combined with native ranks using equal reciprocal-rank fusion:
+\begin{equation}
+S(d)=\frac{\mathbb{1}[d\in R_l]}{60+r_l(d)}+
+\frac{\mathbb{1}[d\in R_e]}{60+r_e(d)}.
+\end{equation}
+The rank constant and equal weights were fixed before the reported hybrid trials. This is not a calibrated confidence score. Native Rust remains the default; Pi/MCP hooks are not automatically replaced.
+
+Dense caches are fingerprinted against graph and source content, model identifier and paths. Writes use private temporary files and atomic replacement. Source paths are constrained to the notes root. No reader API was invoked and no private source text is published here.
+
+\section{Evaluation Protocol}
+\subsection{Datasets and Exposure}
+The existing diagnostic set comprises 72 development questions: 22 facts expressed in English, accented Vietnamese and unaccented Vietnamese, plus six multi-source questions. An additional 18 questions paraphrase known corpus facts; they are not independent unseen facts. Eight unsupported questions are maintained separately.
+
+Labels were manually authored after reading the corpus. Development results have influenced implementation choices. Neither the old nor fresh rerun is an independent held-out study. Table~\ref{tab:snapshots} identifies the snapshots.
+\begin{table}[t]
+\caption{Experimental snapshots and execution status}
+\label{tab:snapshots}
+\centering\small
+\begin{tabularx}{\columnwidth}{@{}lcX@{}}
+\toprule
+Snapshot & Notes & Status \\
+\midrule
+Historical upstream comparison & 12 & Native, dense ablation and upstream Zero-Mem completed. \\
+Integrated hybrid diagnostic & 13 & Native/hybrid, 72+18 questions and negative probes completed. \\
+New rerun & 14 & Native 90-question run completed; dense run incomplete. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Metrics}
+Hit@$k$ requires at least one labeled source in the first $k$ results. AllSources@$k$ requires every labeled source for that question. MRR@5 uses the reciprocal rank of the first correct source and assigns zero to misses. These metrics assess retrieval, not generated answers.
+
+Literal answer-anchor availability in a bounded context is only a diagnostic. It does not establish entailment, temporal correctness or faithfulness. Notes, paragraphs and reader-token budgets are not interchangeable evaluation units.
+
+\subsection{Adopted Research Standard}
+Protocol v1 selects LongMemEval cleaned-S~\cite{longmem} as the primary public memory-QA evaluation and LoCoMo~\cite{locomo} as secondary replication. The planned optimization endpoint is all-required-evidence coverage under a 4,096-reader-token context budget. Planned statistical analysis uses paired cluster bootstrap over shared histories/fact families, with 10,000 replicates and seed 20261028. These are protocol choices, not completed analyses in this report.
+
+Official QA, reader-token evidence-group scoring, independent holdout and paired confidence intervals are \emph{not run}. The present report does not claim protocol-complete validation.
+
+\section{Completed Historical Results}
+\begin{table}[t]
+\caption{Completed integrated diagnostic on 13 notes}
+\label{tab:historical}
+\centering\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Metric & Native BM25 & Hybrid \\
+\midrule
+Development Hit@1 & 42/72 & 52/72 \\
+Development AllSources@5 & 62/72 & 63/72 \\
+Development MRR@5 & 0.7060 & 0.7782 \\
+Fresh-paraphrase Hit@1 & 11/18 & 15/18 \\
+Fresh AllSources@5 & 18/18 & 18/18 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In the completed 13-note run, hybrid improves first-correct-source rank for 14 development questions, regresses for five, and ties on the remainder. For the 18 paraphrases, the corresponding counts are six improvements and one regression. Repeated top-five rankings are identical in the observed repeats. Full literal-anchor coverage within 3,000 characters is 46/72; no QA model was used.
+
+Both native and hybrid return candidate sources for all eight unsupported probes. Candidate retrieval is not itself a hallucinated answer, but it provides no evidence of reliable abstention.
+
+Previously, official Zero-Mem fusion~\cite{zeromem} achieved Hit@1 of 49/72 on the 12-note snapshot; a local hybrid ablation achieved 52/72 but lower AllSources@5, 64/72 versus 67/72. Those results do not establish an across-the-board win. Furthermore, upstream hierarchy returned no usable source/turn results with the original-note adapter, making whole-system hierarchy conclusions inconclusive.
+
+\subsection{Historical Operational Cost}
+For the completed integrated run, model/cache loading took 7.40 seconds. A batch of 80 development/unsupported queries took 8.16 seconds and its repeat 11.58 seconds. The 18-paraphrase batch took 3.17 seconds and its repeat 2.19 seconds. Native CLI median latency including startup was 3.57 milliseconds in the development run. Peak benchmark-process RSS was 2,401,444 KiB and the dense JSON cache occupied 296,261 bytes, excluding model weights. These are single-environment observations, not latency distributions or directly comparable rank-only speedups.
+
+\section{New Rerun: Results and Blocking Conditions}
+The new corpus contains 14 notes and uses the same exposed 72+18 query set. A fresh native index and executable retrieval run completed:
+\begin{table}[h]
+\caption{Fresh native rerun; dense not completed}
+\centering\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Metric & Native, 90 queries \\
+\midrule
+Hit@1 & 53/90 (58.9\%) \\
+Hit@3 & 80/90 (88.9\%) \\
+AllSources@3 & 78/90 (86.7\%) \\
+AllSources@5 & 80/90 (88.9\%) \\
+MRR@5 & 0.7167 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The dense rerun timed out before producing a completed new index/report. A separate import probe also timed out. A host observation showed approximately 13 GiB used memory out of 15 GiB, approximately 238 MiB free memory, 2.1 GiB available memory, and effectively full 4 GiB swap. These observations are consistent with resource contention but do not isolate its causal contribution to each timeout. No unrelated host processes were terminated.
+
+Consequently, this report does not pair the fresh native scores with historical hybrid scores as a new head-to-head result. The requested fresh dense comparison, percentile timings and bootstrap analysis remain incomplete. No new confidence interval is fabricated from old aggregate results.
+
+\section{Validity, Limitations and Next Steps}
+The real vault is small, labels are exposed, and paraphrases share facts. Public benchmark contamination in pretrained models is also not excluded. No statistical significance or generalization claim is made.
+
+A controlled follow-up must freeze a shared corpus hash, restore adequate compute headroom, finish native/dense/hybrid/upstream execution on that same snapshot, and verify evidence identity and upstream session adapters. Context comparisons must count actual tokens with a declared reader tokenizer rather than substitute encoder-token counts or whole-note proxies.
+
+Independent labels should isolate facts/topics across development and holdout. A common reader and fixed prompt/budget are needed for memory QA, update accuracy, temporal reasoning, abstention and citation support. External reader use on private data requires authorization. The optional hybrid remains justified as an experimentally useful feature, not an established novel memory mechanism or a biological-brain model.
+
+\section{Conclusion}
+Completed local measurements support hybrid retrieval as a practical improvement in first-source ranking, with nontrivial memory cost and some regressions. The fresh native rerun is complete, but the fresh dense rerun is not. Reporting that distinction is part of research validity: neither polished IEEE formatting nor a previously successful experiment substitutes for missing current measurements.
+
+\section*{Artifact and Publication Statement}
+The software baseline is merge commit \texttt{5dd66b2}. Private run artifacts are kept outside the public repository. This report uses the actual IEEEtran conference class and two-column layout; it is not an IEEE acceptance, endorsement, or peer-reviewed publication. Public protocol and implementation documentation are provided with ExoMind~\cite{exom}.
+
+\begin{thebibliography}{00}
+\bibitem{longmem} D. Wu et al., ``LongMemEval: Benchmarking Chat Assistants on Long-Term Interactive Memory,'' ICLR, 2025. [Online]. Available: \url{https://github.com/xiaowu0162/LongMemEval}
+\bibitem{locomo} A. Maharana et al., ``Evaluating Very Long-Term Conversational Memory of LLM Agents,'' ACL, 2024. [Online]. Available: \url{https://github.com/snap-research/locomo}
+\bibitem{zeromem} Y. Xiao et al., ``Zero-Mem: Zero-Token Memory Operations for LLM Agents,'' arXiv:2607.29377, 2026. Evaluated upstream commit: \texttt{e1b2f8e}. [Online]. Available: \url{https://github.com/Zero-Mem/Zero-mem}
+\bibitem{exom} ExoMind Project, ``ExoMind source and evaluation documentation.'' [Online]. Available: \url{https://github.com/zhugez/ExoMind}
+\end{thebibliography}
+\end{document}
