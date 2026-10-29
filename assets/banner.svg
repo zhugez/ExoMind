@@ -1,40 +1,84 @@
-<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1280" height="420" viewBox="0 0 1280 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ExoMind — portable knowledge and memory runtime for Pi, Hermes, OpenClaw and Codex">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1280" y2="640" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0B1020"/>
-      <stop offset="1" stop-color="#121A34"/>
+    <linearGradient id="ink" x1="0" y1="0" x2="1280" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#080A11"/>
+      <stop offset="1" stop-color="#0C1120"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(950 220) rotate(120) scale(420 420)">
-      <stop stop-color="#60A5FA" stop-opacity="0.6"/>
-      <stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    <linearGradient id="accent" x1="820" y1="60" x2="1200" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7AA2FF"/>
+      <stop offset="1" stop-color="#70E1FF"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="860" y1="200" x2="1160" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7AA2FF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#70E1FF" stop-opacity="0.15"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1000 205) scale(300)">
+      <stop stop-color="#4C7BFF" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#4C7BFF" stop-opacity="0"/>
     </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#8AA6FF" fill-opacity="0.07"/>
+    </pattern>
   </defs>
 
-  <rect width="1280" height="640" fill="url(#bg)"/>
-  <rect width="1280" height="640" fill="url(#glow)"/>
+  <rect width="1280" height="420" fill="url(#ink)"/>
+  <rect width="1280" height="420" fill="url(#dots)"/>
+  <rect width="1280" height="420" fill="url(#halo)"/>
+  <rect x="0.5" y="0.5" width="1279" height="419" stroke="#1B2440"/>
 
-  <g opacity="0.25" stroke="#3B82F6" stroke-width="1.5">
-    <path d="M140 180L280 120L420 210L560 140L700 220L840 150L980 230L1140 170"/>
-    <path d="M140 340L300 280L440 360L590 300L730 380L880 320L1030 400"/>
-    <path d="M150 500L290 440L430 530L580 470L720 550L860 490L1000 560"/>
+  <!-- knowledge graph mark -->
+  <g stroke="#1B2542" fill="none">
+    <circle cx="1000" cy="205" r="86" stroke-dasharray="2 6"/>
+    <circle cx="1000" cy="205" r="150" stroke-dasharray="2 8"/>
+  </g>
+  <g stroke="url(#edge)" stroke-width="1.4">
+    <path d="M1000 205L875 96M1000 205L1130 69M1000 205L1202 169M1000 205L1135 326M1000 205L920 324M1000 205L840 216"/>
+  </g>
+  <g stroke="#1E2A4A" stroke-width="1.2">
+    <path d="M875 96L1130 69M1130 69L1202 169M1202 169L1135 326M1135 326L920 324M920 324L840 216M840 216L875 96"/>
   </g>
 
-  <g fill="#93C5FD">
-    <circle cx="140" cy="180" r="6"/>
-    <circle cx="280" cy="120" r="6"/>
-    <circle cx="420" cy="210" r="6"/>
-    <circle cx="560" cy="140" r="6"/>
-    <circle cx="700" cy="220" r="6"/>
-    <circle cx="840" cy="150" r="6"/>
-    <circle cx="980" cy="230" r="6"/>
-    <circle cx="1140" cy="170" r="6"/>
+  <g fill="#7AA2FF" fill-opacity="0.10" stroke="#7AA2FF" stroke-opacity="0.45" stroke-width="1.2">
+    <circle cx="875" cy="96" r="9"/>
+    <circle cx="1130" cy="69" r="7"/>
+    <circle cx="1202" cy="169" r="8"/>
+    <circle cx="1135" cy="326" r="7"/>
+    <circle cx="920" cy="324" r="9"/>
+    <circle cx="840" cy="216" r="6"/>
+  </g>
+  <g fill="#B9CCFF">
+    <circle cx="875" cy="96" r="3"/>
+    <circle cx="1130" cy="69" r="2.4"/>
+    <circle cx="1202" cy="169" r="2.8"/>
+    <circle cx="1135" cy="326" r="2.4"/>
+    <circle cx="920" cy="324" r="3"/>
+    <circle cx="840" cy="216" r="2"/>
   </g>
 
-  <text x="96" y="270" fill="#E5EDFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="82" font-weight="700">ExoMind</text>
-  <text x="100" y="330" fill="#A5B4FC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="28" font-weight="500">Portable knowledge runtime for OpenClaw + Codex</text>
+  <circle cx="1000" cy="205" r="26" fill="url(#accent)" fill-opacity="0.07" stroke="url(#accent)" stroke-opacity="0.35"/>
+  <circle cx="1000" cy="205" r="15" fill="url(#accent)" fill-opacity="0.16" stroke="url(#accent)" stroke-width="1.6"/>
+  <circle cx="1000" cy="205" r="5" fill="url(#accent)"/>
 
-  <rect x="100" y="384" width="520" height="60" rx="14" fill="#111B36" stroke="#2B4EA2"/>
-  <text x="128" y="422" fill="#BFDBFE" font-family="JetBrains Mono,Consolas,monospace" font-size="24">exom recall --query "session context"</text>
+  <!-- wordmark -->
+  <text x="80" y="188" fill="#F2F6FF" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-2">ExoMind</text>
+  <text x="82" y="234" fill="#93A4C8" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="23" font-weight="400" letter-spacing="0.2">Portable knowledge &amp; memory runtime</text>
 
-  <text x="100" y="486" fill="#8EA3DA" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22">by zhugez</text>
+  <!-- agent chips -->
+  <g font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" font-weight="500">
+    <rect x="80" y="262" width="62" height="30" rx="8" fill="#101830" stroke="#26345C"/>
+    <text x="94" y="282" fill="#A9C0F5">Pi</text>
+    <rect x="150" y="262" width="96" height="30" rx="8" fill="#101830" stroke="#26345C"/>
+    <text x="164" y="282" fill="#A9C0F5">Hermes</text>
+    <rect x="254" y="262" width="106" height="30" rx="8" fill="#101830" stroke="#26345C"/>
+    <text x="268" y="282" fill="#A9C0F5">OpenClaw</text>
+    <rect x="368" y="262" width="80" height="30" rx="8" fill="#101830" stroke="#26345C"/>
+    <text x="382" y="282" fill="#A9C0F5">Codex</text>
+  </g>
+
+  <!-- cli -->
+  <text x="80" y="352" fill="#5F729B" font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="18">
+    <tspan fill="#7AA2FF">$</tspan> exom recall --query "session context" --topk 5
+  </text>
+
+  <text x="80" y="388" fill="#3F4E70" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" letter-spacing="0.4">by zhugez</text>
 </svg>
