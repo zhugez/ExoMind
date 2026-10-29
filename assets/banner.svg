@@ -1,42 +1,42 @@
-<svg width="1280" height="300" viewBox="0 0 1280 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ExoMind — portable knowledge runtime for Pi, Hermes, OpenClaw and Codex">
-  <defs>
-    <linearGradient id="accent" x1="76" y1="109" x2="128" y2="161" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#7AA2FF"/>
-      <stop offset="1" stop-color="#70E1FF"/>
-    </linearGradient>
-  </defs>
-
-  <rect width="1280" height="300" fill="#06070A"/>
-  <rect x="0.5" y="0.5" width="1279" height="299" stroke="#161922"/>
-
-  <!-- mark: ring + nodes -->
-  <circle cx="102" cy="135" r="26" stroke="url(#accent)" stroke-opacity="0.55" stroke-width="1.4"/>
-  <g stroke="#8FA8E8" stroke-opacity="0.25" stroke-width="1">
-    <path d="M102 135L128 135M102 135L89 158M102 135L89 112"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="640" viewBox="0 0 1600 640" role="img" aria-labelledby="title desc">
+  <title id="title">ExoMind</title>
+  <desc id="desc">Memory that moves with you. Portable knowledge for Pi, Hermes, OpenClaw and Codex. Catppuccin Mocha artwork featuring an open archive of layered memory cards.</desc>
+  <path fill="#1e1e2e" d="M0 0h1600v640H0z"/>
+  <!-- A quiet editorial frame, in the official Mocha palette. -->
+  <path d="M80 80H1520M80 560H1520" stroke="#45475a"/>
+  <g font-family="Inter, 'DejaVu Sans', sans-serif">
+    <text x="80" y="290" fill="#cdd6f4" font-size="106" font-weight="700" letter-spacing="-4">ExoMind<tspan fill="#cba6f7">.</tspan></text>
+    <text x="84" y="354" fill="#bac2de" font-size="30" letter-spacing="-.5">Memory that moves with you.</text>
+    <text x="84" y="486" fill="#a6adc8" font-size="21">Pi<tspan dx="22" fill="#585b70">/</tspan><tspan dx="22">Hermes</tspan><tspan dx="22" fill="#585b70">/</tspan><tspan dx="22">OpenClaw</tspan><tspan dx="22" fill="#585b70">/</tspan><tspan dx="22">Codex</tspan></text>
   </g>
-  <g fill="#8FA8E8">
-    <circle cx="115" cy="158" r="2.5"/>
-    <circle cx="89" cy="158" r="2.5"/>
-    <circle cx="76" cy="135" r="2.5"/>
-    <circle cx="89" cy="112" r="2.5"/>
-    <circle cx="115" cy="112" r="2.5"/>
+  <!-- Open archive: folded covers, three retained layers, one portable memory. -->
+  <g stroke-linejoin="round">
+    <path d="M945 386L1189 517L1480 344L1235 215Z" fill="#181825"/>
+    <path d="M921 359L1161 489L1451 317L1211 187Z" fill="#313244" stroke="#585b70"/>
+    <path d="M921 359V375L1161 505V489Z" fill="#45475a"/>
+    <path d="M1161 489V505L1451 333V317Z" fill="#11111b"/>
+    <path d="M948 315L1188 445L1430 301L1190 171Z" fill="#b4befe"/>
+    <path d="M948 315V329L1188 459V445Z" fill="#89b4fa"/>
+    <path d="M1188 445V459L1430 315V301Z" fill="#7f849c"/>
+    <path d="M972 265L1212 395L1409 278L1169 148Z" fill="#cba6f7"/>
+    <path d="M972 265V279L1212 409V395Z" fill="#b4befe"/>
+    <path d="M1212 395V409L1409 292V278Z" fill="#7f849c"/>
+    <path d="M996 215L1236 345L1388 255L1148 125Z" fill="#f5c2e7"/>
+    <path d="M996 215V229L1236 359V345Z" fill="#cba6f7"/>
+    <path d="M1236 345V359L1388 269V255Z" fill="#9399b2"/>
+    <!-- Etched lines turn the abstract layers into a recognizable archive. -->
+    <g stroke="#1e1e2e" stroke-width="3" opacity=".35">
+      <path d="M1052 215L1180 284M1076 201L1215 276M1100 187L1194 238"/>
+      <path d="M1041 282L1152 342M1022 293L1092 331"/>
+      <path d="M1018 344L1122 400M999 355L1064 390"/>
+    </g>
+    <!-- A teal bookmark crosses the archive and folds over its front edge. -->
+    <path d="M1262 187L1298 207L1146 297L1146 411L1128 390L1110 391V277Z" fill="#94e2d5"/>
+    <path d="M1110 277L1146 297V411L1128 390L1110 391Z" fill="#89dceb"/>
+    <path d="M1110 277L1146 297" stroke="#cdd6f4" stroke-opacity=".5"/>
   </g>
-  <circle cx="128" cy="135" r="5" fill="url(#accent)"/>
-  <circle cx="102" cy="135" r="3.6" fill="#C9D6FF"/>
-
-  <!-- lockup -->
-  <text x="158" y="162" fill="#F4F7FF" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="76" font-weight="700" letter-spacing="-3">ExoMind</text>
-  <text x="160" y="192" fill="#6B7488" font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="13" letter-spacing="2.4">PORTABLE KNOWLEDGE RUNTIME</text>
-  <text x="160" y="212" fill="#3F4757" font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="10.5" letter-spacing="1.8">PI · HERMES · OPENCLAW · CODEX</text>
-
-  <!-- usage column -->
-  <g font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="12.5" text-anchor="end">
-    <text x="1208" y="126" fill="#4A5468">exom index --notes-root ~/vault</text>
-    <text x="1208" y="148" fill="#4A5468">exom recall --query "session context"</text>
+  <g font-family="Inter, 'DejaVu Sans', sans-serif" font-size="16" fill="#a6adc8">
+    <text x="80" y="598">Portable knowledge &amp; memory runtime</text>
+    <text x="1520" y="598" text-anchor="end">Your notes. Your context. Anywhere.</text>
   </g>
-
-  <path d="M72 234H1208" stroke="#161922"/>
-
-  <text x="72" y="264" fill="#4A5468" font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="11.5" letter-spacing="1.8">MIT · LOCAL-FIRST · RUST CORE</text>
-  <text x="1208" y="264" fill="#3A4152" font-family="JetBrains Mono, Consolas, ui-monospace, monospace" font-size="11" letter-spacing="1.2" text-anchor="end">by zhugez</text>
 </svg>
