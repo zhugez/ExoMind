@@ -5,13 +5,13 @@
 ![CI](https://github.com/zhugez/ExoMind/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-Portable knowledge-method runtime that keeps OpenClaw/Codex agents tightly aligned with your own trusted data. ExoMind orchestrates local knowledge indexing, recall, and runtime health checks so that workflows can consume agent-ready context without leaking private notes.
+Portable knowledge-method runtime that keeps Pi, Hermes Agent, OpenClaw, and Codex agents tightly aligned with your own trusted data. ExoMind orchestrates local knowledge indexing, recall, and runtime health checks so that workflows can consume agent-ready context without leaking private notes. One MCP server and one skill serve every agent — no per-agent forks.
 
 ## Why ExoMind?
 
 - **Reliable context for agents** – build a term-graph of your knowledge store and let `exom recall` surface the right breadcrumbs for each session.
 - **Operational peace of mind** – `exom doctor` and `exom index` ensure your runtime caches stay healthy and reproducible.
-- **Integration-first** – designed to slot under OpenClaw and Codex orchestration layers with minimal fuss.
+- **Integration-first** – one `exom mcp` server plus `scripts/install-agent.sh` wire ExoMind into Pi, Hermes Agent, OpenClaw, or Codex in a single command.
 
 ## Quickstart
 
