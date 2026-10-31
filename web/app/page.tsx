@@ -63,7 +63,7 @@ export default function Home() {
             <div className="mb-1 text-[#89b4fa]">$ exom index --notes-root ~/Yasna-Memory --out-root .neural</div>
             <div className="text-[#a6e3a1]">INDEX_OK notes=10002 nodes=10002 edges=35992</div>
             <div className="mt-4 mb-1 text-[#89b4fa]">$ exom recall --query "release workflow beta" --topk 5</div>
-            <div className="text-[#a6e3a1]">{"results":[...]}</div>
+            <div className="text-[#a6e3a1]">{'{"results":[...]}'}</div>
             <div className="mt-4 mb-1 text-[#89b4fa]">$ exom doctor --notes-root ~/Yasna-Memory --graph .neural/graph.json</div>
             <div className="text-[#a6e3a1]">DOCTOR_OK</div>
           </div>
