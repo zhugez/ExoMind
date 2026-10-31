@@ -3,174 +3,173 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ExoMind — Portable Knowledge Runtime</title>
-    <meta name="description" content="ExoMind is a portable knowledge runtime for OpenClaw + Codex. Index private notes, recall context, and ship faster with confident AI workflows." />
+    <title>ExoMind — Portable Knowledge & Memory Runtime</title>
+    <meta name="description" content="ExoMind is a portable knowledge-method runtime for Pi, Hermes Agent, OpenClaw, and Codex. One MCP server and one skill keep agents aligned with your trusted data." />
     <style>
       :root {
-        --bg: #070b14;
-        --bg-soft: #0f1627;
-        --card: rgba(19, 29, 51, 0.72);
-        --line: rgba(122, 162, 255, 0.24);
-        --text: #eaf1ff;
-        --muted: #a3b3d6;
-        --brand: #7aa2ff;
-        --brand-2: #70e1ff;
-        --ok: #5ce1a8;
+        --base: #1e1e2e;
+        --mantle: #181825;
+        --surface0: #313244;
+        --surface1: #45475a;
+        --text: #cdd6f4;
+        --subtext: #a6adc8;
+        --overlay: #6c7086;
+        --blue: #89b4fa;
+        --sapphire: #74c7ec;
+        --teal: #94e2d5;
+        --mauve: #cba6f7;
+        --green: #a6e3a1;
       }
       * { box-sizing: border-box; }
       html, body {
         margin: 0; padding: 0;
-        background: radial-gradient(900px 420px at 82% -20%, #1f315f 0%, transparent 60%), var(--bg);
+        background: var(--base);
         color: var(--text);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
         scroll-behavior: smooth;
+        line-height: 1.6;
       }
-      a { color: inherit; text-decoration: none; }
-      .bg-grid {
-        position: fixed; inset: 0; pointer-events: none; opacity: .24;
-        background-image: linear-gradient(rgba(122,162,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(122,162,255,.08) 1px, transparent 1px);
-        background-size: 28px 28px;
-        mask-image: radial-gradient(circle at 50% 40%, black 38%, transparent 100%);
+      a { color: var(--blue); text-decoration: none; }
+      a:hover { color: var(--sapphire); }
+      .wrap { width: min(1080px, 92vw); margin: 0 auto; }
+      .nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+      .brand { font-weight: 700; font-size: 1.25rem; color: var(--text); }
+      .brand span { color: var(--sapphire); }
+      .nav-links { display: flex; gap: 24px; font-size: 0.95rem; }
+      .nav-links a { color: var(--subtext); }
+      .nav-links a:hover { color: var(--text); }
+
+      .hero { padding: 60px 0 40px; text-align: center; }
+      .tag { display: inline-block; background: var(--surface0); color: var(--teal); padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; letter-spacing: 0.5px; margin-bottom: 16px; }
+      h1 { font-size: clamp(2.4rem, 5vw, 3.6rem); font-weight: 700; line-height: 1.1; margin: 0 0 16px; letter-spacing: -0.5px; }
+      h1 .accent { color: var(--sapphire); }
+      .lead { color: var(--subtext); font-size: 1.15rem; max-width: 680px; margin: 0 auto 28px; }
+      .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .btn { display: inline-block; padding: 12px 22px; border-radius: 8px; font-weight: 600; transition: all 0.2s; }
+      .btn.primary { background: var(--blue); color: var(--base); }
+      .btn.primary:hover { background: var(--sapphire); transform: translateY(-1px); }
+      .btn.secondary { background: var(--surface0); color: var(--text); border: 1px solid var(--surface1); }
+      .btn.secondary:hover { background: var(--surface1); }
+
+      .terminal {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 40px auto;
+        max-width: 720px;
+        font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+        font-size: 0.9rem;
+        text-align: left;
+        color: var(--subtext);
       }
-      .blob { position: fixed; border-radius: 50%; filter: blur(50px); opacity: .2; pointer-events: none; animation: drift 14s ease-in-out infinite; }
-      .b1 { width: 220px; height: 220px; background: #78a8ff; top: 8%; left: 5%; }
-      .b2 { width: 240px; height: 240px; background: #6ad8ff; bottom: 6%; right: 8%; animation-delay: -5s; }
-      @keyframes drift { 0%,100%{transform: translate(0,0)} 50%{transform: translate(18px,-20px)} }
+      .terminal .cmd { color: var(--blue); }
+      .terminal .ok { color: var(--green); }
 
-      .wrap { width: min(1120px, 92vw); margin: 0 auto; position: relative; z-index: 2; }
-      .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; position: sticky; top: 0; backdrop-filter: blur(8px); z-index: 8; }
-      .brand { font-weight: 800; letter-spacing: .3px; }
-      .brand span { background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-      .nav-links { display: flex; gap: 18px; color: var(--muted); font-size: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 48px 0; }
+      .card {
+        background: var(--mantle);
+        border: 1px solid var(--surface0);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .card h3 { margin: 0 0 8px; font-size: 1.1rem; color: var(--text); }
+      .card p { margin: 0; color: var(--subtext); font-size: 0.95rem; }
 
-      .hero { padding: 52px 0 24px; display: grid; grid-template-columns: 1.1fr .9fr; gap: 26px; align-items: center; }
-      .tag { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; color: #b9c9ef; padding: 8px 12px; font-size: 12px; background: rgba(122, 162, 255, 0.08); }
-      h1 { margin: 16px 0 12px; font-size: clamp(32px, 5.6vw, 58px); line-height: 1.04; letter-spacing: -.6px; }
-      .lead { color: var(--muted); font-size: clamp(16px, 2.3vw, 18px); line-height: 1.6; max-width: 62ch; }
-      .cta { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
-      .btn { border: 1px solid var(--line); padding: 11px 16px; border-radius: 10px; font-weight: 600; transition: .2s ease; }
-      .btn:hover { transform: translateY(-2px); border-color: rgba(122,162,255,.48); }
-      .btn.primary { background: linear-gradient(90deg, var(--brand), #95b4ff); color: #071227; border: none; }
-      .hero-card { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(22,33,58,.8), rgba(14,21,38,.8)); border-radius: 16px; padding: 18px; box-shadow: 0 20px 70px rgba(18,32,66,.45); }
-      .terminal { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.6; color: #cfe0ff; }
-      .terminal .ok { color: var(--ok); }
-      .terminal .muted { color: #9fb2df; }
+      section { padding: 48px 0; }
+      .section-title { font-size: 1.8rem; margin: 0 0 8px; text-align: center; }
+      .section-sub { color: var(--subtext); text-align: center; margin: 0 0 32px; }
 
-      .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0 40px; }
-      .metric { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
-      .metric .k { font-size: 26px; font-weight: 800; }
-      .metric .d { color: var(--muted); font-size: 13px; margin-top: 4px; }
+      footer { text-align: center; color: var(--overlay); padding: 32px 0; font-size: 0.9rem; border-top: 1px solid var(--surface0); margin-top: 48px; }
 
-      section { padding: 34px 0; }
-      .section-title { font-size: clamp(24px, 4vw, 32px); margin: 0 0 10px; }
-      .section-sub { color: var(--muted); margin: 0 0 18px; }
-      .cards, .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-      .card, .step { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
-      .card h3, .step h3 { margin: 0 0 8px; font-size: 17px; }
-      .card p, .step p { margin: 0; color: var(--muted); line-height: 1.55; }
-      .step .n { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(122,162,255,.2); font-weight: 700; margin-bottom: 10px; }
-
-      .cta-band { margin: 36px 0 46px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(90deg, rgba(122,162,255,.14), rgba(112,225,255,.12)); display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; }
-      .cta-band p { margin: 0; color: #d7e5ff; }
-      footer { color: #8ea2cf; font-size: 13px; padding: 10px 0 38px; }
-
-      .reveal { opacity: 0; transform: translateY(14px); transition: opacity .5s ease, transform .5s ease; }
-      .reveal.show { opacity: 1; transform: translateY(0); }
-
-      @media (max-width: 900px) {
+      @media (max-width: 700px) {
         .nav-links { display: none; }
-        .hero, .grid3, .cards, .how { grid-template-columns: 1fr; }
-        .hero { padding-top: 34px; }
-        .hero-card { order: 2; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .blob, .reveal { animation: none !important; transition: none !important; }
+        .hero { padding: 40px 0 24px; }
       }
     </style>
   </head>
   <body>
-    <div class="bg-grid"></div>
-    <div class="blob b1"></div><div class="blob b2"></div>
-
     <div class="wrap">
       <nav class="nav">
-        <div class="brand"><span>ExoMind</span></div>
+        <div class="brand">Exo<span>Mind</span></div>
         <div class="nav-links">
           <a href="#features">Features</a>
           <a href="#how">How it works</a>
-          <a href="#bench">Benchmarks</a>
           <a href="https://github.com/zhugez/ExoMind">GitHub</a>
         </div>
       </nav>
 
       <header class="hero">
-        <div class="reveal">
-          <div class="tag">Portable knowledge runtime for OpenClaw + Codex</div>
-          <h1>Build with AI agents.<br/>Without losing context.</h1>
-          <p class="lead">ExoMind indexes your private notes into a queryable runtime so Codex and OpenClaw can reason with the right context at the right moment. Fewer hallucinations. Faster shipping. Better control.</p>
-          <div class="cta">
-            <a class="btn primary" href="https://github.com/zhugez/ExoMind">Get ExoMind</a>
-            <a class="btn" href="https://github.com/zhugez/ExoMind/wiki">Read Docs</a>
-          </div>
-        </div>
-        <div class="hero-card terminal reveal">
-          <div class="muted">$ exom doctor --notes-root ./Yasna-Memory --graph .neural/graph.json</div>
-          <div class="ok">DOCTOR_OK</div>
-          <br/>
-          <div class="muted">$ exom index --notes-root ./Yasna-Memory --out-root .neural</div>
-          <div class="ok">INDEX_OK notes=10002 nodes=10002 edges=35992</div>
-          <br/>
-          <div class="muted">$ exom recall --query "release workflow beta" --topk 5 --json</div>
-          <div class="ok">{"results":[...]}</div>
+        <div class="tag">Portable knowledge runtime · Rust</div>
+        <h1>One runtime.<br/><span class="accent">Every agent.</span></h1>
+        <p class="lead">ExoMind keeps Pi, Hermes Agent, OpenClaw, and Codex tightly aligned with your own trusted data. One MCP server and one skill. No per-agent forks. Private notes stay private.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/zhugez/ExoMind">Get ExoMind</a>
+          <a class="btn secondary" href="https://github.com/zhugez/ExoMind#quickstart">Quickstart</a>
         </div>
       </header>
 
-      <div class="grid3" id="bench">
-        <div class="metric reveal"><div class="k">10002</div><div class="d">Notes indexed in 10k benchmark</div></div>
-        <div class="metric reveal"><div class="k">152ms</div><div class="d">Recall p95 at 10k scale</div></div>
-        <div class="metric reveal"><div class="k">1.0000</div><div class="d">Hit@1 on synthetic benchmark set</div></div>
+      <div class="terminal">
+        <div class="cmd">$ exom index --notes-root ~/Yasna-Memory --out-root .neural</div>
+        <div class="ok">INDEX_OK notes=10002 nodes=10002 edges=35992</div>
+        <br/>
+        <div class="cmd">$ exom recall --query "release workflow beta" --topk 5</div>
+        <div class="ok">{"results":[...]}</div>
+        <br/>
+        <div class="cmd">$ exom doctor --notes-root ~/Yasna-Memory --graph .neural/graph.json</div>
+        <div class="ok">DOCTOR_OK</div>
       </div>
 
       <section id="features">
-        <h2 class="section-title reveal">Why teams pick ExoMind</h2>
-        <p class="section-sub reveal">Bold narrative, clear flow, and action-first UX.</p>
-        <div class="cards">
-          <article class="card reveal"><h3>Private-by-default context</h3><p>Keep personal or company knowledge local and indexed without exposing raw vault data in public repos.</p></article>
-          <article class="card reveal"><h3>Rust-first runtime</h3><p>Fast CLI for index / recall / doctor / lifecycle, with Python fallback only when needed.</p></article>
-          <article class="card reveal"><h3>Codex + OpenClaw ready</h3><p>Use ExoMind recall as source-of-truth context before every coding or agent orchestration task.</p></article>
+        <h2 class="section-title">Why ExoMind</h2>
+        <p class="section-sub">Reliable context. Operational peace of mind. Integration-first.</p>
+        <div class="grid">
+          <article class="card">
+            <h3>Reliable context for agents</h3>
+            <p>Build a term-graph of your knowledge store. <code>exom recall</code> surfaces the right breadcrumbs for each session.</p>
+          </article>
+          <article class="card">
+            <h3>Operational peace of mind</h3>
+            <p><code>exom doctor</code> and <code>exom index</code> keep runtime caches healthy and reproducible.</p>
+          </article>
+          <article class="card">
+            <h3>One MCP, every agent</h3>
+            <p>Single <code>exom mcp</code> server + skill. Wire into Pi, Hermes, OpenClaw, or Codex with one command.</p>
+          </article>
         </div>
       </section>
 
       <section id="how">
-        <h2 class="section-title reveal">How it works</h2>
-        <p class="section-sub reveal">Three steps to turn messy notes into agent-usable context.</p>
-        <div class="how">
-          <article class="step reveal"><div class="n">1</div><h3>Index</h3><p>Parse markdown notes into graph + semantic signals under <code>.neural/graph.json</code>.</p></article>
-          <article class="step reveal"><div class="n">2</div><h3>Recall</h3><p>Query by intent before prompting Codex, so code decisions inherit relevant domain memory.</p></article>
-          <article class="step reveal"><div class="n">3</div><h3>Operate</h3><p>Run doctor checks, lifecycle cleanup, and benchmark loops to keep quality predictable.</p></article>
+        <h2 class="section-title">How it works</h2>
+        <p class="section-sub">Index. Recall. Operate.</p>
+        <div class="grid">
+          <article class="card">
+            <h3>1. Index</h3>
+            <p>Parse your notes into a graph under <code>.neural/graph.json</code>.</p>
+          </article>
+          <article class="card">
+            <h3>2. Recall</h3>
+            <p>Query by intent. Agents get the right context before they reason.</p>
+          </article>
+          <article class="card">
+            <h3>3. Operate</h3>
+            <p>Doctor checks, lifecycle cleanup, and hybrid retrieval keep quality high.</p>
+          </article>
         </div>
       </section>
 
-      <section>
-        <div class="cta-band reveal">
-          <p><strong>Ready to run ExoMind?</strong><br/>Start with beta, keep private data private, and scale your agent workflows safely.</p>
-          <div class="cta">
-            <a class="btn primary" href="https://github.com/zhugez/ExoMind/releases">Download Beta</a>
-            <a class="btn" href="https://github.com/zhugez/ExoMind/wiki/Quickstart">Quickstart</a>
-          </div>
+      <section style="text-align: center;">
+        <h2 class="section-title">Ready to try it?</h2>
+        <p class="section-sub">Rust-first CLI. Private by default. One runtime for every agent.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/zhugez/ExoMind">View on GitHub</a>
+          <a class="btn secondary" href="https://github.com/zhugez/ExoMind/wiki">Wiki</a>
         </div>
       </section>
 
-      <footer>ExoMind © 2026 · Portable knowledge runtime for OpenClaw + Codex</footer>
+      <footer>
+        ExoMind · Portable knowledge & memory runtime · <a href="https://github.com/zhugez/ExoMind">GitHub</a>
+      </footer>
     </div>
-
-    <script>
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) e.target.classList.add('show');
-        });
-      }, { threshold: 0.12 });
-      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-    </script>
   </body>
 </html>
