@@ -10,9 +10,9 @@ export default function Home() {
         <div className="text-center">
           <div className="mx-auto mb-8 flex justify-center">
             <img
-              src="https://raw.githubusercontent.com/zhugez/ExoMind/main/assets/exomind-logo.svg"
-              alt="ExoMind logo"
-              className="h-16 w-auto"
+              src="https://raw.githubusercontent.com/zhugez/ExoMind/main/assets/exomind-icon.svg"
+              alt="ExoMind icon"
+              className="h-20 w-20"
             />
           </div>
 
