@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="128" viewBox="0 0 512 128">
+  <defs>
+    <filter id="neon" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="textgrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#89b4fa"/>
+      <stop offset="100%" stop-color="#cba6f7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="128" rx="24" fill="#1e1e2e"/>
+  <circle cx="64" cy="64" r="36" fill="none" stroke="#89b4fa" stroke-width="4" filter="url(#neon)"/>
+  <path d="M48 48 L64 36 L80 48 L80 58 L64 70 L48 58 Z" fill="#cba6f7" filter="url(#neon)"/>
+  <text x="120" y="78" fill="url(#textgrad)" font-family="system-ui, Inter, sans-serif" font-size="42" font-weight="700" filter="url(#neon)">ExoMind</text>
+</svg>
