@@ -8,6 +8,14 @@ export default function Home() {
       <div className="relative z-10 mx-auto w-[min(860px,92vw)] py-16 md:py-24">
         {/* Centered header */}
         <div className="text-center">
+          <div className="mx-auto mb-8 flex justify-center">
+            <img
+              src="https://raw.githubusercontent.com/zhugez/ExoMind/main/assets/exomind-logo.svg"
+              alt="ExoMind logo"
+              className="h-16 w-auto"
+            />
+          </div>
+
           <div className="mx-auto mb-10 max-w-2xl rounded-2xl border border-[#313244]/60 bg-[#181825]/80 p-6 text-left font-mono text-sm text-[#a6adc8] shadow-[0_0_24px_rgba(116,199,236,.06)] backdrop-blur-sm">
             <div className="mb-1 text-[#74c7ec]">$ exom index --notes-root ~/Yasna-Memory --out-root .neural</div>
             <div className="text-[#a6e3a1]">INDEX_OK notes=10002 nodes=10002 edges=35992</div>
