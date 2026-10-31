@@ -2,6 +2,8 @@
 
 ![ExoMind Banner](assets/banner.svg)
 
+![ExoMind Logo](assets/exomind-logo.svg)
+
 ![CI](https://github.com/zhugez/ExoMind/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 [![Live](https://img.shields.io/badge/Live-3x0mind.vercel.app-89b4fa?style=flat&logo=vercel)](https://3x0mind.vercel.app/)
